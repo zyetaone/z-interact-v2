@@ -8,7 +8,7 @@
 
 	interface Props {
 		activeLayer: 'canvas' | 'world' | 'video';
-		tableId?: number | null;
+		spaceId?: string | null;
 		layers: {
 			canvas: LayerConfig;
 			world: LayerConfig;
@@ -17,28 +17,28 @@
 		class?: string;
 	}
 
-	let { activeLayer, tableId = null, layers, class: className = '' }: Props = $props();
+	let { activeLayer, spaceId = null, layers, class: className = '' }: Props = $props();
 
 	const tabs = $derived([
 		{
 			key: 'canvas' as const,
 			label: '2D',
 			icon: PenTool,
-			href: tableId ? `${base}/table/${tableId}` : null,
+			href: spaceId ? `${base}/forge/${spaceId}` : null,
 			available: layers.canvas.available
 		},
 		{
 			key: 'world' as const,
 			label: '3D',
 			icon: Globe,
-			href: tableId ? `${base}/world?from=${tableId}` : `${base}/world`,
+			href: `${base}/world`,
 			available: layers.world.available
 		},
 		{
 			key: 'video' as const,
 			label: 'Video',
 			icon: Film,
-			href: tableId ? `${base}/video/${tableId}` : null,
+			href: null,
 			available: layers.video.available
 		}
 	]);
@@ -59,7 +59,7 @@
 		{:else if isDisabled}
 			<div
 				class="flex cursor-not-allowed items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-slate-600"
-				title={!tab.available ? 'Not available yet' : 'Select a table first'}
+				title="Not available yet"
 			>
 				<Icon class="h-3.5 w-3.5" />
 				{tab.label}

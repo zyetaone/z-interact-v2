@@ -4,8 +4,6 @@
 	import {
 		Globe,
 		ChevronLeft,
-		Box,
-		Loader2,
 		X,
 		Gamepad2,
 		RotateCcw,
@@ -16,38 +14,12 @@
 	let { data } = $props();
 
 	let selectedRoom = $state<IslandModel | null>(null);
-	let isGenerating3d = $state<string | null>(null);
-	let generateError = $state('');
 	let avatarActive = $state(false);
 	let sceneControls = $state<SceneControls | null>(null);
 	let showControls = $state(true);
 
 	function handleRoomSelect(room: IslandModel | null) {
 		selectedRoom = room;
-	}
-
-	async function generate3d(spaceId: string) {
-		isGenerating3d = spaceId;
-		generateError = '';
-
-		try {
-			const res = await fetch('/api/iso', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ spaceId })
-			});
-
-			if (!res.ok) {
-				const err = await res.json().catch(() => ({ message: 'Generation failed' }));
-				throw new Error(err.message || `HTTP ${res.status}`);
-			}
-
-			window.location.reload();
-		} catch (e) {
-			generateError = e instanceof Error ? e.message : '3D generation failed';
-		} finally {
-			isGenerating3d = null;
-		}
 	}
 
 	function toggleAvatar() {
@@ -63,7 +35,7 @@
 </script>
 
 <svelte:head>
-	<title>Your World — Workspace Studio</title>
+	<title>Metaverse — Workspace Studio</title>
 </svelte:head>
 
 <div class="relative h-screen w-screen overflow-hidden bg-slate-950">
@@ -86,16 +58,11 @@
 							<Globe class="h-8 w-8 text-purple-300" />
 						</div>
 					</div>
-					<h2 class="mb-2 text-lg font-semibold text-white">No Islands Yet</h2>
+					<h2 class="mb-2 text-lg font-semibold text-white">The Metaverse Awaits</h2>
 					<p class="mb-5 text-sm text-slate-400">
-						Complete your quest and forge spaces to populate your floating island world.
+						No completed spaces yet. As adventurers finish their quests and forge 3D
+						models, their islands will appear here.
 					</p>
-					{#if data.pending.length > 0}
-						<p class="mb-4 text-xs text-slate-500">
-							{data.pending.length} space{data.pending.length !== 1 ? 's' : ''} ready
-							for 3D generation
-						</p>
-					{/if}
 					<a
 						href="{base}/"
 						class="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-purple-500"
@@ -112,22 +79,24 @@
 	<nav
 		class="slide-up pointer-events-none absolute top-0 right-0 left-0 z-20 flex items-center justify-between px-4 py-4 sm:px-6"
 	>
-		<a
-			href="{base}/"
-			class="glass smooth-transition pointer-events-auto flex items-center gap-2 rounded-full px-4 py-2 text-sm text-slate-300 hover:scale-105 hover:text-white"
-		>
-			<ChevronLeft class="h-4 w-4" />
-			<span class="hidden sm:inline">Home</span>
-		</a>
-
 		<div class="pointer-events-auto flex items-center gap-2">
 			<a
-				href="{base}/metaverse"
+				href="{base}/"
 				class="glass smooth-transition flex items-center gap-2 rounded-full px-4 py-2 text-sm text-slate-300 hover:scale-105 hover:text-white"
 			>
-				<Globe class="h-4 w-4 text-purple-400" />
-				<span class="hidden sm:inline">Metaverse</span>
+				<ChevronLeft class="h-4 w-4" />
+				<span class="hidden sm:inline">Home</span>
 			</a>
+			<a
+				href="{base}/world"
+				class="glass smooth-transition flex items-center gap-2 rounded-full px-4 py-2 text-sm text-slate-300 hover:scale-105 hover:text-white"
+			>
+				<Globe class="h-4 w-4" />
+				<span class="hidden sm:inline">Your World</span>
+			</a>
+		</div>
+
+		<div class="pointer-events-auto flex items-center gap-2">
 			<div class="glass rounded-full px-4 py-2 text-sm text-slate-300">
 				<Globe class="mr-1.5 inline-block h-4 w-4 text-purple-400" />
 				{data.models.length} island{data.models.length !== 1 ? 's' : ''}
@@ -235,53 +204,10 @@
 							class="flex items-center justify-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/10 py-2 text-center text-xs font-medium text-purple-300 transition-colors hover:bg-purple-500/20"
 						>
 							<Hammer class="h-3.5 w-3.5" />
-							Open in Forge
+							View in Forge
 						</a>
 					</div>
 				</div>
-			</div>
-		</div>
-	{/if}
-
-	<!-- Pending 3D Generation Panel -->
-	{#if data.pending.length > 0 && !selectedRoom}
-		<div class="absolute top-4 right-4 z-20 w-64 sm:top-6 sm:right-6">
-			<div class="glass rounded-xl p-4">
-				<div class="mb-3 flex items-center gap-2">
-					<Box class="h-4 w-4 text-purple-400" />
-					<h3 class="text-xs font-semibold text-white">Pending 3D</h3>
-				</div>
-				<div class="max-h-48 space-y-2 overflow-y-auto">
-					{#each data.pending as ws (ws.id)}
-						<div class="flex items-center justify-between rounded-lg bg-white/5 p-2">
-							<div class="flex items-center gap-2">
-								<img
-									src={ws.imageUrl}
-									alt={ws.name}
-									class="h-8 w-8 rounded object-cover"
-								/>
-								<span class="text-xs text-slate-300">{ws.name}</span>
-							</div>
-							<button
-								onclick={() => generate3d(ws.id)}
-								disabled={isGenerating3d !== null}
-								class="flex h-7 items-center gap-1 rounded-md border border-purple-500/20 bg-purple-500/10 px-2 text-[10px] font-medium text-purple-300 transition-colors hover:bg-purple-500/20 disabled:opacity-50"
-							>
-								{#if isGenerating3d === ws.id}
-									<Loader2 class="h-3 w-3 animate-spin" />
-								{:else}
-									<Box class="h-3 w-3" />
-								{/if}
-								3D
-							</button>
-						</div>
-					{/each}
-				</div>
-				{#if generateError}
-					<div class="mt-2 rounded bg-rose-500/10 px-2 py-1 text-[10px] text-rose-300">
-						{generateError}
-					</div>
-				{/if}
 			</div>
 		</div>
 	{/if}

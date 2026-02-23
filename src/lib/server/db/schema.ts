@@ -1,6 +1,6 @@
 import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
-// A user session (replaces the old workspace + tableId concept)
+// A user session
 export const sessions = sqliteTable('sessions', {
 	id: text('id')
 		.primaryKey()

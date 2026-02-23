@@ -4,8 +4,9 @@
 	import { WebGLRenderer, PCFSoftShadowMap, ACESFilmicToneMapping } from 'three';
 	import Scene from './scene/Scene.svelte';
 
-	export interface RoomModel {
-		tableId: number;
+	export interface IslandModel {
+		id: string;
+		name: string;
 		imageUrl: string;
 		glbUrl: string;
 		editCount: number;
@@ -21,8 +22,8 @@
 		onroomselect,
 		controls = $bindable<SceneControls | null>(null)
 	}: {
-		models: RoomModel[];
-		onroomselect?: (room: RoomModel | null) => void;
+		models: IslandModel[];
+		onroomselect?: (room: IslandModel | null) => void;
 		controls?: SceneControls | null;
 	} = $props();
 

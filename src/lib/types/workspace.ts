@@ -38,7 +38,7 @@ export interface Version {
 }
 
 export interface EditHistoryRow extends Version {
-	tableId: number;
+	spaceId: string;
 }
 
 export interface TreeNode extends Version {

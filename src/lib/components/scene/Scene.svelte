@@ -4,15 +4,15 @@
 	import { Vector3, Color, FogExp2 } from 'three';
 	import RoomModel from './RoomModel.svelte';
 	import Avatar from './Avatar.svelte';
-	import type { RoomModel as RoomModelType, SceneControls } from '../IsometricScene.svelte';
+	import type { IslandModel, SceneControls } from '../IsometricScene.svelte';
 
 	let {
 		models = [],
 		onroomselect,
 		controls = $bindable<SceneControls | null>(null)
 	}: {
-		models: RoomModelType[];
-		onroomselect?: (room: RoomModelType | null) => void;
+		models: IslandModel[];
+		onroomselect?: (room: IslandModel | null) => void;
 		controls?: SceneControls | null;
 	} = $props();
 
@@ -35,13 +35,55 @@
 		return [x, 0, z];
 	}
 
-	// Room positions lookup
-	const roomPositions = $derived(
-		new Map(models.map((m, i) => [m.tableId, gridPosition(i)]))
+	// Island positions lookup
+	const islandPositions = $derived(
+		new Map(models.map((m, i) => [m.id, gridPosition(i)]))
 	);
 
+	// Bridge connections between adjacent islands
+	const bridges = $derived.by(() => {
+		const result: {
+			position: [number, number, number];
+			rotation: number;
+			length: number;
+		}[] = [];
+		const rows = Math.ceil(models.length / cols);
+
+		for (let i = 0; i < models.length; i++) {
+			const col = i % cols;
+			const row = Math.floor(i / cols);
+			const posA = gridPosition(i);
+
+			// Horizontal neighbor (right)
+			if (col + 1 < cols && i + 1 < models.length) {
+				const posB = gridPosition(i + 1);
+				const midX = (posA[0] + posB[0]) / 2;
+				const midZ = (posA[2] + posB[2]) / 2;
+				const dx = posB[0] - posA[0];
+				const dz = posB[2] - posA[2];
+				const length = Math.sqrt(dx * dx + dz * dz) - 5; // subtract island diameters
+				const rotation = Math.atan2(dz, dx);
+				result.push({ position: [midX, 0, midZ], rotation, length: Math.max(length, 1) });
+			}
+
+			// Vertical neighbor (below)
+			if (row + 1 < rows && i + cols < models.length) {
+				const posB = gridPosition(i + cols);
+				const midX = (posA[0] + posB[0]) / 2;
+				const midZ = (posA[2] + posB[2]) / 2;
+				const dx = posB[0] - posA[0];
+				const dz = posB[2] - posA[2];
+				const length = Math.sqrt(dx * dx + dz * dz) - 5;
+				const rotation = Math.atan2(dz, dx);
+				result.push({ position: [midX, 0, midZ], rotation, length: Math.max(length, 1) });
+			}
+		}
+
+		return result;
+	});
+
 	// Camera tween state
-	let selectedRoom = $state<RoomModelType | null>(null);
+	let selectedRoom = $state<IslandModel | null>(null);
 	let isTransitioning = $state(false);
 	let avatarEnabled = $state(false);
 
@@ -76,7 +118,7 @@
 		}
 	});
 
-	function tweenTo(pos: [number, number, number], room: RoomModelType) {
+	function tweenTo(pos: [number, number, number], room: IslandModel) {
 		if (isTransitioning || !orbitRef) return;
 		selectedRoom = room;
 		isTransitioning = true;
@@ -125,7 +167,7 @@
 		if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
 
 		e.preventDefault();
-		const idx = models.findIndex((m) => m.tableId === selectedRoom!.tableId);
+		const idx = models.findIndex((m) => m.id === selectedRoom!.id);
 		let next = idx;
 
 		if (e.key === 'ArrowRight') next = (idx + 1) % models.length;
@@ -135,7 +177,7 @@
 
 		if (next !== idx) {
 			const room = models[next];
-			const pos = roomPositions.get(room.tableId);
+			const pos = islandPositions.get(room.id);
 			if (pos) tweenTo(pos, room);
 		}
 	}
@@ -203,26 +245,43 @@
 
 <T.DirectionalLight position={[-10, 10, -10]} color={0x8080ff} intensity={0.3} />
 
-<!-- Ground -->
-<T.Mesh rotation.x={-Math.PI / 2} receiveShadow>
+<!-- Ground (void below islands) -->
+<T.Mesh rotation.x={-Math.PI / 2} position.y={-3} receiveShadow>
 	<T.PlaneGeometry args={[120, 120]} />
-	<T.MeshStandardMaterial color={0x0d1117} roughness={0.95} metalness={0} />
+	<T.MeshStandardMaterial color={0x060a12} roughness={0.95} metalness={0} />
 </T.Mesh>
 
-<!-- Grid -->
-<T.GridHelper args={[80, 80, 0x1a1f36, 0x111827]} position.y={0.01} />
+<!-- Grid (subtle, below islands) -->
+<T.GridHelper args={[80, 80, 0x1a1f36, 0x111827]} position.y={-2.99} />
 
-<!-- Room models -->
-{#each models as model, i (model.tableId)}
+<!-- Floating island models -->
+{#each models as model, i (model.id)}
 	{@const pos = gridPosition(i)}
 	<RoomModel
 		glbUrl={model.glbUrl}
-		tableId={model.tableId}
+		name={model.name}
 		position={pos}
+		index={i}
 		onclick={() => {
 			if (!isTransitioning) tweenTo(pos, model);
 		}}
 	/>
+{/each}
+
+<!-- Bridges between adjacent islands -->
+{#each bridges as bridge, i (i)}
+	<T.Mesh
+		position={[bridge.position[0], 0, bridge.position[2]]}
+		rotation.y={-bridge.rotation}
+	>
+		<T.BoxGeometry args={[bridge.length, 0.1, 0.4]} />
+		<T.MeshStandardMaterial
+			color={0x4a3728}
+			transparent
+			opacity={0.6}
+			roughness={0.8}
+		/>
+	</T.Mesh>
 {/each}
 
 <!-- Avatar -->
