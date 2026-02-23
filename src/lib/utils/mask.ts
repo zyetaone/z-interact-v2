@@ -58,4 +58,3 @@ export function generateMaskFromShapes(
 
 	return offscreen.toDataURL('image/png');
 }
-

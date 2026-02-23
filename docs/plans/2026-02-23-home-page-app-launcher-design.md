@@ -13,6 +13,7 @@
 ## Task 1: Expand validation to accept tableId=0
 
 **Files:**
+
 - Modify: `src/lib/config/tables.ts`
 - Modify: `src/routes/table/ai.remote.ts` (lines 51, 122, 136)
 - Modify: `src/routes/api/workspace/+server.ts` (line 22)
@@ -34,6 +35,7 @@ export function isValidTableId(tableId: number): boolean {
 **Step 2: Update Valibot schemas in ai.remote.ts**
 
 Change all `v.minValue(1)` to `v.minValue(0)` in three schemas:
+
 - `EditImageSchema.tableId` (line 51)
 - `deleteImage` schema (line 122)
 - `LockImageSchema.tableId` (line 136)
@@ -55,6 +57,7 @@ git commit -m "feat: expand validation to accept tableId=0 for standalone editor
 ## Task 2: Add basePath to Workspace class
 
 **Files:**
+
 - Modify: `src/routes/table/[tableId]/workspace.svelte.ts` (lines 73, 110, 121, 123)
 
 **Step 1: Add basePath parameter to constructor**
@@ -75,6 +78,7 @@ constructor(
 **Step 2: Replace all hardcoded `/table/${this.data.tableId}` with `this.basePath`**
 
 4 occurrences to update:
+
 - `createWorkspace`: `pushState(this.basePath, {});`
 - `generate`: `pushState(\`${this.basePath}?node=${newVersion.id}\`, { node: newVersion.id });`
 - `activate` (versionId truthy): `pushState(\`${this.basePath}?node=${versionId}\`, { node: versionId });`
@@ -97,6 +101,7 @@ git commit -m "refactor: add basePath to Workspace class for URL flexibility"
 ## Task 3: Create standalone editor route
 
 **Files:**
+
 - Create: `src/routes/editor/+page.server.ts`
 - Create: `src/routes/editor/+page.svelte`
 
@@ -159,6 +164,7 @@ git commit -m "feat: add standalone /editor route for presentation mode"
 ## Task 4: Update layout to hide nav on home and editor routes
 
 **Files:**
+
 - Modify: `src/routes/+layout.svelte`
 
 **Step 1: Add editor and home route detection**
@@ -185,6 +191,7 @@ git commit -m "feat: hide top nav on home and editor routes"
 ## Task 5: Replace home page with immersive app launcher
 
 **Files:**
+
 - Rewrite: `src/routes/+page.svelte`
 - Simplify: `src/routes/+page.server.ts`
 
@@ -205,6 +212,7 @@ export const load: PageServerLoad = async () => {
 `src/routes/+page.svelte` — Full-bleed immersive launcher with 2 stacked hero sections:
 
 Structure:
+
 ```
 div.min-h-screen.bg-slate-950
 ├── Header (fixed top, glass, z-30)
@@ -221,6 +229,7 @@ div.min-h-screen.bg-slate-950
 ```
 
 Styling follows existing patterns:
+
 - `.glass` and `.glass-panel` classes
 - Purple accent colors (`bg-purple-500/20`, `text-purple-300`)
 - `.fade-in`, `.slide-up`, `.zoom-in` animations
@@ -264,14 +273,14 @@ Expected: Success
 
 ## File Summary
 
-| File | Action | Lines ~est |
-|------|--------|-----------|
-| `src/lib/config/tables.ts` | MODIFY | +2 |
-| `src/routes/table/ai.remote.ts` | MODIFY | 3 line changes |
-| `src/routes/api/workspace/+server.ts` | unchanged (uses isValidTableId) | 0 |
-| `src/routes/table/[tableId]/workspace.svelte.ts` | MODIFY | +5 |
-| `src/routes/editor/+page.server.ts` | CREATE | ~20 |
-| `src/routes/editor/+page.svelte` | CREATE | ~650 |
-| `src/routes/+layout.svelte` | MODIFY | +3 |
-| `src/routes/+page.svelte` | REWRITE | ~150 |
-| `src/routes/+page.server.ts` | SIMPLIFY | ~5 |
+| File                                             | Action                          | Lines ~est     |
+| ------------------------------------------------ | ------------------------------- | -------------- |
+| `src/lib/config/tables.ts`                       | MODIFY                          | +2             |
+| `src/routes/table/ai.remote.ts`                  | MODIFY                          | 3 line changes |
+| `src/routes/api/workspace/+server.ts`            | unchanged (uses isValidTableId) | 0              |
+| `src/routes/table/[tableId]/workspace.svelte.ts` | MODIFY                          | +5             |
+| `src/routes/editor/+page.server.ts`              | CREATE                          | ~20            |
+| `src/routes/editor/+page.svelte`                 | CREATE                          | ~650           |
+| `src/routes/+layout.svelte`                      | MODIFY                          | +3             |
+| `src/routes/+page.svelte`                        | REWRITE                         | ~150           |
+| `src/routes/+page.server.ts`                     | SIMPLIFY                        | ~5             |

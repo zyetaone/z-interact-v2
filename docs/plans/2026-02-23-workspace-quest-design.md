@@ -42,13 +42,13 @@ Completed spaces become floating islands in a 3D world. Users explore with WASD 
 
 ## Routes
 
-| Route | Purpose |
-|-------|---------|
-| `/` | Landing — start quest or rejoin |
-| `/quest` | Progressive reveal binary choices |
-| `/forge/[spaceId]` | AI-edit a chosen space |
-| `/world` | Your completed floating island |
-| `/metaverse` | All connected islands |
+| Route              | Purpose                           |
+| ------------------ | --------------------------------- |
+| `/`                | Landing — start quest or rejoin   |
+| `/quest`           | Progressive reveal binary choices |
+| `/forge/[spaceId]` | AI-edit a chosen space            |
+| `/world`           | Your completed floating island    |
+| `/metaverse`       | All connected islands             |
 
 ## Data Model Changes
 
@@ -86,6 +86,7 @@ Completed spaces become floating islands in a 3D world. Users explore with WASD 
 ## Implementation Approach
 
 Build with agentic teams for parallel development:
+
 - Quest engine + UI
 - Forge editor (adapt existing editor)
 - World/metaverse scene (adapt existing Threlte components)

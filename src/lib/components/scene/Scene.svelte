@@ -36,9 +36,7 @@
 	}
 
 	// Island positions lookup
-	const islandPositions = $derived(
-		new Map(models.map((m, i) => [m.id, gridPosition(i)]))
-	);
+	const islandPositions = $derived(new Map(models.map((m, i) => [m.id, gridPosition(i)])));
 
 	// Bridge connections between adjacent islands
 	const bridges = $derived.by(() => {
@@ -98,7 +96,9 @@
 	} | null>(null);
 
 	// OrbitControls ref for target manipulation
-	let orbitRef = $state<import('three/addons/controls/OrbitControls.js').OrbitControls | null>(null);
+	let orbitRef = $state<import('three/addons/controls/OrbitControls.js').OrbitControls | null>(
+		null
+	);
 
 	useTask((delta) => {
 		if (!tween || !orbitRef) return;
@@ -270,17 +270,9 @@
 
 <!-- Bridges between adjacent islands -->
 {#each bridges as bridge, i (i)}
-	<T.Mesh
-		position={[bridge.position[0], 0, bridge.position[2]]}
-		rotation.y={-bridge.rotation}
-	>
+	<T.Mesh position={[bridge.position[0], 0, bridge.position[2]]} rotation.y={-bridge.rotation}>
 		<T.BoxGeometry args={[bridge.length, 0.1, 0.4]} />
-		<T.MeshStandardMaterial
-			color={0x4a3728}
-			transparent
-			opacity={0.6}
-			roughness={0.8}
-		/>
+		<T.MeshStandardMaterial color={0x4a3728} transparent opacity={0.6} roughness={0.8} />
 	</T.Mesh>
 {/each}
 

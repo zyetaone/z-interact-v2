@@ -71,9 +71,14 @@
 	{#if !engine.isComplete}
 		<!-- Quest step -->
 		{#key engine.currentStep}
-			<div class="flex flex-1 flex-col items-center justify-center px-4 py-16" in:fly={{ y: 40, duration: 400 }}>
+			<div
+				class="flex flex-1 flex-col items-center justify-center px-4 py-16"
+				in:fly={{ y: 40, duration: 400 }}
+			>
 				<!-- Category badge -->
-				<div class="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-500/20 bg-purple-500/10 px-4 py-1.5">
+				<div
+					class="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-500/20 bg-purple-500/10 px-4 py-1.5"
+				>
 					<Sparkles class="h-3.5 w-3.5 text-purple-400" />
 					<span class="text-xs font-semibold tracking-wide text-purple-300 uppercase">
 						{engine.step?.category}
@@ -96,7 +101,11 @@
 					<button
 						onclick={() => pick('a')}
 						class="group relative overflow-hidden rounded-2xl transition-transform duration-300 focus:outline-none
-							{chosen === 'a' ? 'scale-105 ring-2 ring-purple-400' : chosen === 'b' ? 'scale-95 opacity-40' : 'hover:scale-[1.02]'}"
+							{chosen === 'a'
+							? 'scale-105 ring-2 ring-purple-400'
+							: chosen === 'b'
+								? 'scale-95 opacity-40'
+								: 'hover:scale-[1.02]'}"
 					>
 						<div class="aspect-[4/3] w-full">
 							<img
@@ -105,7 +114,9 @@
 								class="h-full w-full object-cover"
 							/>
 						</div>
-						<div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 pt-12">
+						<div
+							class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 pt-12"
+						>
 							<span class="text-lg font-semibold">{engine.step?.optionA.name}</span>
 						</div>
 					</button>
@@ -114,7 +125,11 @@
 					<button
 						onclick={() => pick('b')}
 						class="group relative overflow-hidden rounded-2xl transition-transform duration-300 focus:outline-none
-							{chosen === 'b' ? 'scale-105 ring-2 ring-purple-400' : chosen === 'a' ? 'scale-95 opacity-40' : 'hover:scale-[1.02]'}"
+							{chosen === 'b'
+							? 'scale-105 ring-2 ring-purple-400'
+							: chosen === 'a'
+								? 'scale-95 opacity-40'
+								: 'hover:scale-[1.02]'}"
 					>
 						<div class="aspect-[4/3] w-full">
 							<img
@@ -123,7 +138,9 @@
 								class="h-full w-full object-cover"
 							/>
 						</div>
-						<div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 pt-12">
+						<div
+							class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 pt-12"
+						>
 							<span class="text-lg font-semibold">{engine.step?.optionB.name}</span>
 						</div>
 					</button>
@@ -132,10 +149,17 @@
 		{/key}
 	{:else}
 		<!-- Results summary -->
-		<div class="flex flex-1 flex-col items-center justify-center px-4 py-16" in:scale={{ duration: 500, start: 0.9 }}>
-			<div class="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-1.5">
+		<div
+			class="flex flex-1 flex-col items-center justify-center px-4 py-16"
+			in:scale={{ duration: 500, start: 0.9 }}
+		>
+			<div
+				class="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-1.5"
+			>
 				<Sparkles class="h-3.5 w-3.5 text-emerald-400" />
-				<span class="text-xs font-semibold tracking-wide text-emerald-300 uppercase">Quest Complete</span>
+				<span class="text-xs font-semibold tracking-wide text-emerald-300 uppercase"
+					>Quest Complete</span
+				>
 			</div>
 
 			<h1 class="mb-2 text-center text-3xl font-bold sm:text-4xl">Your Workspace DNA</h1>
@@ -161,7 +185,9 @@
 							<p class="text-sm font-semibold">{result.spaceName}</p>
 							<div class="mt-1 flex flex-wrap gap-1">
 								{#each result.tags.slice(0, 2) as tag (tag)}
-									<span class="rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] text-purple-300">
+									<span
+										class="rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] text-purple-300"
+									>
 										{tag}
 									</span>
 								{/each}
@@ -175,7 +201,7 @@
 			<button
 				onclick={finish}
 				disabled={saving}
-				class="inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:bg-purple-500 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+				class="inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-purple-500 disabled:opacity-50 disabled:hover:scale-100"
 			>
 				{#if saving}
 					Saving…
@@ -189,7 +215,10 @@
 
 	<!-- Back to home link -->
 	<div class="pb-6 text-center">
-		<a href="/" class="inline-flex items-center gap-1 text-xs text-slate-500 transition-colors hover:text-slate-300">
+		<a
+			href="/"
+			class="inline-flex items-center gap-1 text-xs text-slate-500 transition-colors hover:text-slate-300"
+		>
 			<ChevronRight class="h-3 w-3 rotate-180" />
 			Back to home
 		</a>

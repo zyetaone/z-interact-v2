@@ -13,6 +13,7 @@
 ### Task 1: Add Video Engine section + Workshop link to home page
 
 **Files:**
+
 - Modify: `src/routes/+page.svelte`
 
 **Step 1: Add Film import**
@@ -20,7 +21,7 @@
 In the script tag imports (line 2), add `Film` to the Lucide import:
 
 ```svelte
-import { PenTool, Globe, Film, ArrowRight, Presentation } from '@lucide/svelte';
+import {(PenTool, Globe, Film, ArrowRight, Presentation)} from '@lucide/svelte';
 ```
 
 **Step 2: Add Video Engine section after 3D World**
@@ -39,8 +40,9 @@ After the closing `</section>` of "Section 2: 3D World" (line 118), add a divide
 			class="absolute inset-0 opacity-20 blur-2xl saturate-50"
 			style="background: radial-gradient(ellipse at 30% 50%, rgba(245, 158, 11, 0.3), transparent 70%), radial-gradient(ellipse at 70% 50%, rgba(249, 115, 22, 0.2), transparent 70%);"
 		></div>
-		<div class="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/80 to-slate-950">
-		</div>
+		<div
+			class="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/80 to-slate-950"
+		></div>
 	</div>
 
 	<!-- Content -->
@@ -49,9 +51,7 @@ After the closing `</section>` of "Section 2: 3D World" (line 118), add a divide
 			<Film class="h-8 w-8 text-amber-300" />
 		</div>
 		<h2 class="mb-4 text-4xl font-bold sm:text-5xl">Video Engine</h2>
-		<p class="mb-6 text-lg text-slate-400">
-			Turn any images into cinematic video clips
-		</p>
+		<p class="mb-6 text-lg text-slate-400">Turn any images into cinematic video clips</p>
 		<div class="mb-8 flex flex-wrap justify-center gap-2">
 			{#each ['Image to Video', 'Camera Moves', 'Film Reel', 'Instant Download'] as feature}
 				<span
@@ -107,6 +107,7 @@ git commit -m "feat: add Video Engine section and Workshop Mode link to home pag
 ### Task 2: Create `/workshop` route (redirect to gallery)
 
 **Files:**
+
 - Create: `src/routes/workshop/+page.svelte`
 
 **Step 1: Create workshop page**
@@ -148,9 +149,11 @@ git commit -m "feat: add /workshop route redirecting to gallery"
 ### Task 3: Create standalone `/video` engine route
 
 **Files:**
+
 - Create: `src/routes/video/+page.svelte`
 
 This is a fork of `src/routes/video/[tableId]/+page.svelte` with these differences:
+
 - No `data` prop — no server load needed (SvelteKit auto-creates a blank page load)
 - Images come from user upload (drag & drop / file picker), not DB history
 - No `tableId` references — download filenames use "engine" prefix
@@ -380,7 +383,7 @@ Create `src/routes/video/+page.svelte`:
 	</nav>
 
 	<!-- Hero Section -->
-	<header class="relative z-10 px-6 pb-8 pt-4 text-center sm:px-8 sm:pb-12 sm:pt-8">
+	<header class="relative z-10 px-6 pt-4 pb-8 text-center sm:px-8 sm:pt-8 sm:pb-12">
 		<div class="slide-up mx-auto max-w-3xl">
 			<div
 				class="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-4 py-1.5 text-xs font-medium tracking-widest text-amber-300 uppercase"
@@ -412,9 +415,7 @@ Create `src/routes/video/+page.svelte`:
 					aria-label="Image upload area"
 				>
 					<div class="mb-4 flex justify-center">
-						<div
-							class="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20"
-						>
+						<div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20">
 							<Upload class="h-8 w-8 text-amber-300" />
 						</div>
 					</div>
@@ -483,7 +484,7 @@ Create `src/routes/video/+page.svelte`:
 								<!-- Remove button -->
 								<button
 									onclick={() => removeImage(scene.id)}
-									class="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity hover:bg-red-500/60 group-hover:opacity-100"
+									class="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-500/60"
 									title="Remove"
 								>
 									<X class="h-3 w-3" />
@@ -512,9 +513,7 @@ Create `src/routes/video/+page.svelte`:
 					<div class="glass slide-up rounded-2xl p-8">
 						<div class="mb-5 flex justify-center">
 							<div class="relative">
-								<div
-									class="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20"
-								>
+								<div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20">
 									<Loader2 class="h-8 w-8 animate-spin text-amber-400" />
 								</div>
 								<div
@@ -550,8 +549,8 @@ Create `src/routes/video/+page.svelte`:
 						Generate Film
 					</button>
 					<p class="mt-3 text-xs text-slate-500">
-						{storyboard.length} scene{storyboard.length !== 1 ? 's' : ''} will be transformed
-						into cinematic video clips
+						{storyboard.length} scene{storyboard.length !== 1 ? 's' : ''} will be transformed into cinematic
+						video clips
 					</p>
 				{/if}
 			</div>
@@ -584,9 +583,7 @@ Create `src/routes/video/+page.svelte`:
 			<div class="mx-auto max-w-6xl">
 				<div class="mb-5 flex items-center justify-between">
 					<div class="flex items-center gap-3">
-						<div
-							class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20"
-						>
+						<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20">
 							<Film class="h-5 w-5 text-amber-300" />
 						</div>
 						<div>
@@ -693,9 +690,7 @@ Create `src/routes/video/+page.svelte`:
 			<div class="mx-auto max-w-2xl">
 				<div class="glass rounded-xl p-4">
 					<div class="flex items-center gap-3">
-						<Loader2
-							class="h-4 w-4 flex-shrink-0 animate-spin text-amber-400"
-						/>
+						<Loader2 class="h-4 w-4 flex-shrink-0 animate-spin text-amber-400" />
 						<div class="min-w-0 flex-1">
 							<p class="text-sm text-white">{currentLabel}</p>
 							<div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-white/10">
@@ -705,9 +700,7 @@ Create `src/routes/video/+page.svelte`:
 								></div>
 							</div>
 						</div>
-						<span class="text-xs text-slate-500"
-							>{currentScene + 1}/{totalScenes}</span
-						>
+						<span class="text-xs text-slate-500">{currentScene + 1}/{totalScenes}</span>
 					</div>
 				</div>
 			</div>
@@ -763,6 +756,7 @@ git commit -m "feat: add standalone /video engine route with image upload"
 ### Task 4: Update layout for video engine route and workshop nav
 
 **Files:**
+
 - Modify: `src/routes/+layout.svelte`
 
 **Step 1: Add video engine route detection**
@@ -838,6 +832,7 @@ Expected: Build succeeds with no errors
 Run: `bun run dev`
 
 Manual checks:
+
 - [ ] `/` — shows 3 engine cards (Edit, 3D, Video) + Workshop Mode link
 - [ ] `/editor` — standalone editor (unchanged)
 - [ ] `/world` — 3D scene (unchanged)

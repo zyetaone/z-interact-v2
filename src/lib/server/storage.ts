@@ -77,9 +77,7 @@ async function persistToR2(sourceUrl: string, options: PersistOptions): Promise<
 
 	const contentLength = response.headers.get('content-length');
 	if (contentLength && parseInt(contentLength, 10) > options.maxSize) {
-		throw new Error(
-			`${options.label} too large: ${contentLength} bytes (max ${options.maxSize})`
-		);
+		throw new Error(`${options.label} too large: ${contentLength} bytes (max ${options.maxSize})`);
 	}
 
 	const buffer = await response.arrayBuffer();

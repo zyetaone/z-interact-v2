@@ -18,9 +18,7 @@
 	</div>
 {:else}
 	<div class="flex items-center gap-2">
-		<div
-			class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"
-		></div>
+		<div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
 		<span class="text-sm text-gray-500">{message}</span>
 	</div>
 {/if}

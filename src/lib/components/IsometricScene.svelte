@@ -39,11 +39,7 @@
 
 <div class="relative h-full w-full">
 	{#if browser}
-		<Canvas
-			{createRenderer}
-			shadows={PCFSoftShadowMap}
-			toneMapping={ACESFilmicToneMapping}
-		>
+		<Canvas {createRenderer} shadows={PCFSoftShadowMap} toneMapping={ACESFilmicToneMapping}>
 			<Scene {models} {onroomselect} bind:controls />
 		</Canvas>
 	{/if}

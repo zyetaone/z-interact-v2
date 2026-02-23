@@ -127,8 +127,7 @@
 	}
 
 	function animateTo(target: 'collapsed' | 'peek' | 'full') {
-		const targetH =
-			target === 'collapsed' ? COLLAPSED_H : target === 'peek' ? PEEK_H : fullHeight;
+		const targetH = target === 'collapsed' ? COLLAPSED_H : target === 'peek' ? PEEK_H : fullHeight;
 		const startH = currentY;
 		const startTime = performance.now();
 		const duration = 250; // ms
@@ -186,13 +185,12 @@
 	<!-- Sheet -->
 	<div
 		bind:this={sheetEl}
-		class="fixed right-0 bottom-0 left-0 z-50 flex flex-col overflow-hidden rounded-t-2xl border-t border-white/10 bg-[#0f111a]/98 backdrop-blur-xl sheet-safe-area"
+		class="sheet-safe-area fixed right-0 bottom-0 left-0 z-50 flex flex-col overflow-hidden rounded-t-2xl border-t border-white/10 bg-[#0f111a]/98 backdrop-blur-xl"
 		style="height: {displayHeight}px; will-change: height"
 		role="dialog"
 		aria-label="Editor panel"
 	>
 		<!-- Drag handle -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="flex h-12 flex-shrink-0 cursor-grab touch-none items-center justify-center active:cursor-grabbing"
 			role="slider"

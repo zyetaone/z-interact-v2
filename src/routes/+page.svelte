@@ -39,16 +39,18 @@
 							class="smooth-transition group overflow-hidden rounded-xl border border-white/10 bg-white/5 hover:border-purple-500/30"
 						>
 							<div class="aspect-[4/3]">
-								<img
-									src={space.imageUrl}
-									alt={space.name}
-									class="h-full w-full object-cover"
-								/>
+								<img src={space.imageUrl} alt={space.name} class="h-full w-full object-cover" />
 							</div>
 							<div class="p-3">
 								<p class="text-sm font-semibold">{space.name}</p>
-								<span class="mt-1 inline-block rounded-full px-2 py-0.5 text-[10px]
-									{space.status === 'complete' ? 'bg-emerald-500/10 text-emerald-300' : space.status === 'forging' ? 'bg-amber-500/10 text-amber-300' : 'bg-slate-500/10 text-slate-400'}">
+								<span
+									class="mt-1 inline-block rounded-full px-2 py-0.5 text-[10px]
+									{space.status === 'complete'
+										? 'bg-emerald-500/10 text-emerald-300'
+										: space.status === 'forging'
+											? 'bg-amber-500/10 text-amber-300'
+											: 'bg-slate-500/10 text-slate-400'}"
+								>
 									{space.status}
 								</span>
 							</div>
@@ -61,14 +63,14 @@
 			<div class="flex flex-wrap justify-center gap-4">
 				<a
 					href="/forge/{data.spaces[0]?.id ?? ''}"
-					class="inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:bg-purple-500 hover:scale-105"
+					class="inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-purple-500"
 				>
 					<Hammer class="h-5 w-5" />
 					Continue Forging
 				</a>
 				<a
 					href="/world"
-					class="glass smooth-transition inline-flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-8 py-3 text-lg font-semibold text-emerald-200 hover:bg-emerald-500/20 hover:scale-105"
+					class="glass smooth-transition inline-flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-8 py-3 text-lg font-semibold text-emerald-200 hover:scale-105 hover:bg-emerald-500/20"
 				>
 					<Globe class="h-5 w-5" />
 					Enter World
@@ -84,7 +86,9 @@
 					class="absolute inset-0 scale-110 opacity-15 blur-3xl saturate-50"
 					style="background-image: url('/assets/WS 01.jpg'); background-size: cover; background-position: center;"
 				></div>
-				<div class="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-950/90 to-slate-950"></div>
+				<div
+					class="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-950/90 to-slate-950"
+				></div>
 			</div>
 
 			<div class="mb-6 inline-flex items-center justify-center rounded-2xl bg-purple-500/20 p-4">
@@ -95,12 +99,13 @@
 				Workspace Quest
 			</h1>
 			<p class="mb-10 max-w-lg text-center text-lg text-slate-400">
-				Design your ideal workspace through an interactive quest. Make 7 choices, forge your spaces with AI, and explore them in 3D.
+				Design your ideal workspace through an interactive quest. Make 7 choices, forge your spaces
+				with AI, and explore them in 3D.
 			</p>
 
 			<a
 				href="/quest"
-				class="pulse-glow inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-10 py-4 text-xl font-bold text-white transition-all hover:bg-purple-500 hover:scale-105"
+				class="pulse-glow inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-10 py-4 text-xl font-bold text-white transition-all hover:scale-105 hover:bg-purple-500"
 			>
 				Start Quest
 				<ArrowRight class="h-6 w-6" />

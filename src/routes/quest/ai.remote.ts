@@ -1,11 +1,6 @@
 import * as v from 'valibot';
 import { command } from '$app/server';
-import {
-	saveQuestChoice,
-	createSpace,
-	updateSession,
-	getSession
-} from '$lib/server/db/queries';
+import { saveQuestChoice, createSpace, updateSession, getSession } from '$lib/server/db/queries';
 
 const SaveQuestSchema = v.object({
 	sessionId: v.pipe(v.string(), v.nonEmpty()),

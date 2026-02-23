@@ -44,7 +44,10 @@
 	]);
 </script>
 
-<nav class="glass flex items-center gap-1 rounded-full px-1.5 py-1 {className}" aria-label="Creative layers">
+<nav
+	class="glass flex items-center gap-1 rounded-full px-1.5 py-1 {className}"
+	aria-label="Creative layers"
+>
 	{#each tabs as tab (tab.key)}
 		{@const Icon = tab.icon}
 		{@const isActive = tab.key === activeLayer}

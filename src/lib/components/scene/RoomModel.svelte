@@ -18,7 +18,6 @@
 	} = $props();
 
 	let loaded = $state(false);
-	let failed = $state(false);
 	let floatY = $state(0);
 
 	const px = $derived(position[0]);
@@ -41,11 +40,7 @@
 
 		// Center on island (raised to sit on top of the hex platform)
 		const center = box.getCenter(new Vector3());
-		glbScene.position.set(
-			px - center.x * scale,
-			0.75 - box.min.y * scale,
-			pz - center.z * scale
-		);
+		glbScene.position.set(px - center.x * scale, 0.75 - box.min.y * scale, pz - center.z * scale);
 
 		// Enable shadows on all meshes
 		glbScene.traverse((child) => {
@@ -116,7 +111,6 @@
 		url={glbUrl}
 		oncreate={(ref) => onGltfLoad({ scene: ref })}
 		onerror={() => {
-			failed = true;
 			loaded = true;
 		}}
 		{onclick}

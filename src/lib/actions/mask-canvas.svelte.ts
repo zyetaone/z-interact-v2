@@ -50,7 +50,12 @@ function hitTestPolygonVertex(x: number, y: number, polygons: MaskPolygon[]) {
 	return null;
 }
 
-function drawPolygon(ctx: CanvasRenderingContext2D, poly: MaskPolygon, color: string, showHandles: boolean) {
+function drawPolygon(
+	ctx: CanvasRenderingContext2D,
+	poly: MaskPolygon,
+	color: string,
+	showHandles: boolean
+) {
 	if (poly.points.length < 2) return;
 
 	ctx.fillStyle = color;

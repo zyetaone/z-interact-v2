@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { base } from '$app/paths';
-	import IsometricScene, { type IslandModel, type SceneControls } from '$lib/components/IsometricScene.svelte';
+	import IsometricScene, {
+		type IslandModel,
+		type SceneControls
+	} from '$lib/components/IsometricScene.svelte';
 	import {
 		Globe,
 		ChevronLeft,
@@ -80,9 +83,7 @@
 			<div class="flex h-full items-center justify-center">
 				<div class="glass mx-4 max-w-md rounded-2xl p-10 text-center">
 					<div class="mb-4 flex justify-center">
-						<div
-							class="flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-500/20"
-						>
+						<div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-500/20">
 							<Globe class="h-8 w-8 text-purple-300" />
 						</div>
 					</div>
@@ -92,8 +93,7 @@
 					</p>
 					{#if data.pending.length > 0}
 						<p class="mb-4 text-xs text-slate-500">
-							{data.pending.length} space{data.pending.length !== 1 ? 's' : ''} ready
-							for 3D generation
+							{data.pending.length} space{data.pending.length !== 1 ? 's' : ''} ready for 3D generation
 						</p>
 					{/if}
 					<a
@@ -179,10 +179,7 @@
 				<div class="glass rounded-xl p-3 text-[11px] text-slate-400">
 					<div class="mb-1.5 flex items-center justify-between">
 						<span class="font-medium text-slate-300">Controls</span>
-						<button
-							onclick={() => (showControls = false)}
-							class="text-slate-500 hover:text-white"
-						>
+						<button onclick={() => (showControls = false)} class="text-slate-500 hover:text-white">
 							<X class="h-3 w-3" />
 						</button>
 					</div>
@@ -255,11 +252,7 @@
 					{#each data.pending as ws (ws.id)}
 						<div class="flex items-center justify-between rounded-lg bg-white/5 p-2">
 							<div class="flex items-center gap-2">
-								<img
-									src={ws.imageUrl}
-									alt={ws.name}
-									class="h-8 w-8 rounded object-cover"
-								/>
+								<img src={ws.imageUrl} alt={ws.name} class="h-8 w-8 rounded object-cover" />
 								<span class="text-xs text-slate-300">{ws.name}</span>
 							</div>
 							<button

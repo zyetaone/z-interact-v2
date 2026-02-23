@@ -13,7 +13,11 @@ function db() {
 // --- Sessions ---
 
 export function createSession(data?: Partial<NewSession>) {
-	return db().insert(sessions).values(data ?? {}).returning().get();
+	return db()
+		.insert(sessions)
+		.values(data ?? {})
+		.returning()
+		.get();
 }
 
 export function getSession(id: string) {

@@ -37,7 +37,6 @@
 	let natWidth = $state(0);
 	let natHeight = $state(0);
 	let isMobile = $state(false);
-	let isDragging = $state(false);
 	let isSidebarOpen = $state(true);
 	let sheetSnap = $state<'collapsed' | 'peek' | 'full'>('peek');
 	let compareSlider = $state(50);
@@ -338,7 +337,7 @@
 						>
 							<div class="h-12 w-12 animate-ping rounded-full bg-purple-500/40"></div>
 							<span
-								class="absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded bg-black/80 px-2 py-1 text-[10px] text-white backdrop-blur"
+								class="absolute top-full left-1/2 mt-2 -translate-x-1/2 rounded bg-black/80 px-2 py-1 text-[10px] whitespace-nowrap text-white backdrop-blur"
 							>
 								Detecting object...
 							</span>
@@ -493,9 +492,7 @@
 		{#if !isMobile && workspace.status !== 'complete'}
 			<aside
 				class="glass-panel flex w-[340px] flex-col overflow-hidden rounded-2xl border-l border-white/5 bg-[#0f111a]/95 backdrop-blur-xl transition-all duration-300
-				{isSidebarOpen
-					? 'translate-x-0 opacity-100'
-					: 'w-0 translate-x-full overflow-hidden opacity-0'}"
+				{isSidebarOpen ? 'translate-x-0 opacity-100' : 'w-0 translate-x-full overflow-hidden opacity-0'}"
 			>
 				<div class="custom-scrollbar flex-1 overflow-y-auto p-4">
 					<div class="flex flex-col gap-6">
@@ -517,7 +514,7 @@
 							<button
 								onclick={() => workspace.complete()}
 								disabled={workspace.isProcessing || workspace.hasReachedLimit}
-								class="flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-3 font-medium text-white shadow-lg transition-all hover:bg-purple-500 hover:shadow-purple-500/25 disabled:opacity-40 pulse-glow"
+								class="pulse-glow flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-3 font-medium text-white shadow-lg transition-all hover:bg-purple-500 hover:shadow-purple-500/25 disabled:opacity-40"
 							>
 								<Box class="h-5 w-5" />
 								Complete & Build 3D
@@ -589,14 +586,12 @@
 	<!-- Mobile Bottom Sheet -->
 	{#if isMobile && workspace.status === 'forging'}
 		<BottomSheet bind:snap={sheetSnap}>
-			{#snippet children()}
-				<CommandBar
-					{editor}
-					isProcessing={workspace.isProcessing}
-					onsubmit={() => handleGenerate()}
-					onassetupload={handleAssetUpload}
-				/>
-			{/snippet}
+			<CommandBar
+				{editor}
+				isProcessing={workspace.isProcessing}
+				onsubmit={() => handleGenerate()}
+				onassetupload={handleAssetUpload}
+			/>
 
 			{#snippet fullContent()}
 				<div class="flex flex-col gap-4">
@@ -662,7 +657,7 @@
 	<!-- Error toast -->
 	{#if workspace.errorMessage}
 		<div
-			class="fixed bottom-6 left-1/2 z-[60] flex max-w-md -translate-x-1/2 items-center gap-3 overflow-hidden rounded-lg bg-rose-600 px-5 py-3 text-white shadow-lg animate-in"
+			class="animate-in fixed bottom-6 left-1/2 z-[60] flex max-w-md -translate-x-1/2 items-center gap-3 overflow-hidden rounded-lg bg-rose-600 px-5 py-3 text-white shadow-lg"
 		>
 			<span class="text-sm">{workspace.errorMessage}</span>
 			<button
@@ -672,7 +667,7 @@
 				&times;
 			</button>
 			<div class="absolute right-0 bottom-0 left-0 h-0.5 bg-rose-400/30">
-				<div class="h-full bg-rose-300/60 animate-shrink"></div>
+				<div class="animate-shrink h-full bg-rose-300/60"></div>
 			</div>
 		</div>
 	{/if}

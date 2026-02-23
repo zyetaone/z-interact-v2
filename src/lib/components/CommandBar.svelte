@@ -1,13 +1,5 @@
 <script lang="ts">
-	import {
-		Plus,
-		Minus,
-		Sparkles,
-		Send,
-		Eraser,
-		ImagePlus,
-		Trash2
-	} from '@lucide/svelte';
+	import { Plus, Minus, Sparkles, Send, Eraser, ImagePlus, Trash2 } from '@lucide/svelte';
 	import { MAX_FIELD_LENGTH } from '$lib/utils/edit-prompt';
 	import type { Editor } from '$lib/editor.svelte';
 
@@ -84,7 +76,7 @@
 					m.key
 						? m.active
 						: autoMode === m.key
-							? 'bg-white/5 ring-1 ring-inset ring-white/20 text-slate-300'
+							? 'bg-white/5 text-slate-300 ring-1 ring-white/20 ring-inset'
 							: 'bg-white/5 text-slate-400 hover:bg-white/10'}"
 				>
 					<m.icon class="h-3.5 w-3.5" />
@@ -182,9 +174,7 @@
 					bind:value={editor.brushSize}
 					class="h-1 w-14 cursor-pointer appearance-none rounded-full bg-slate-700 accent-purple-500"
 				/>
-				<span class="w-5 text-center font-mono text-[10px] text-slate-400"
-					>{editor.brushSize}</span
-				>
+				<span class="w-5 text-center font-mono text-[10px] text-slate-400">{editor.brushSize}</span>
 			</div>
 		{/if}
 

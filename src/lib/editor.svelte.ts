@@ -26,7 +26,9 @@ export class Editor {
 
 	// Derived
 	readonly hasPrompt = $derived(this.prompt.trim().length > 0);
-	readonly hasMask = $derived(this.rects.length > 0 || this.paths.length > 0 || this.polygons.length > 0 || !!this.aiMaskUrl);
+	readonly hasMask = $derived(
+		this.rects.length > 0 || this.paths.length > 0 || this.polygons.length > 0 || !!this.aiMaskUrl
+	);
 	readonly canGenerate = $derived(this.hasPrompt || this.hasMask);
 	get maskData(): MaskData | undefined {
 		if (!this.hasMask) return;

@@ -28,9 +28,7 @@ async function getImageDimensions(input: string): Promise<ImageDimensions | null
 			for (let i = 0; i < len; i++) bytes[i] = raw.charCodeAt(i);
 			buffer = bytes.buffer;
 		} else {
-			const url = input.startsWith('/')
-				? `${getRequestEvent()?.url?.origin}${input}`
-				: input;
+			const url = input.startsWith('/') ? `${getRequestEvent()?.url?.origin}${input}` : input;
 			const response = await fetch(url, { headers: { Range: 'bytes=0-65535' } });
 			buffer = await response.arrayBuffer();
 		}
@@ -47,7 +45,10 @@ async function getImageDimensions(input: string): Promise<ImageDimensions | null
 		if (view.getUint8(0) === 0xff && view.getUint8(1) === 0xd8) {
 			let offset = 2;
 			while (offset < buffer.byteLength - 9) {
-				if (view.getUint8(offset) !== 0xff) { offset++; continue; }
+				if (view.getUint8(offset) !== 0xff) {
+					offset++;
+					continue;
+				}
 				const marker = view.getUint8(offset + 1);
 				if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xcc) {
 					return {

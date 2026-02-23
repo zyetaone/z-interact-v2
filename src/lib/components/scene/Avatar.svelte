@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { T, useTask, useThrelte } from '@threlte/core';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { Vector3, DoubleSide } from 'three';
 
 	let {
@@ -11,7 +12,7 @@
 	} = $props();
 
 	const { camera } = useThrelte();
-	const keys = new Set<string>();
+	const keys = new SvelteSet<string>();
 	let posX = $state(0);
 	let posZ = $state(0);
 	let ringOpacity = $state(0.3);
@@ -26,7 +27,7 @@
 		keys.delete(e.key.toLowerCase());
 	}
 
-	useTask((delta) => {
+	useTask(() => {
 		if (!enabled || keys.size === 0) return;
 
 		const dir = new Vector3();

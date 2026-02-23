@@ -1,15 +1,10 @@
 <script lang="ts">
 	import { base } from '$app/paths';
-	import IsometricScene, { type IslandModel, type SceneControls } from '$lib/components/IsometricScene.svelte';
-	import {
-		Globe,
-		ChevronLeft,
-		X,
-		Gamepad2,
-		RotateCcw,
-		Keyboard,
-		Hammer
-	} from '@lucide/svelte';
+	import IsometricScene, {
+		type IslandModel,
+		type SceneControls
+	} from '$lib/components/IsometricScene.svelte';
+	import { Globe, ChevronLeft, X, Gamepad2, RotateCcw, Keyboard, Hammer } from '@lucide/svelte';
 
 	let { data } = $props();
 
@@ -52,16 +47,14 @@
 			<div class="flex h-full items-center justify-center">
 				<div class="glass mx-4 max-w-md rounded-2xl p-10 text-center">
 					<div class="mb-4 flex justify-center">
-						<div
-							class="flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-500/20"
-						>
+						<div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-500/20">
 							<Globe class="h-8 w-8 text-purple-300" />
 						</div>
 					</div>
 					<h2 class="mb-2 text-lg font-semibold text-white">The Metaverse Awaits</h2>
 					<p class="mb-5 text-sm text-slate-400">
-						No completed spaces yet. As adventurers finish their quests and forge 3D
-						models, their islands will appear here.
+						No completed spaces yet. As adventurers finish their quests and forge 3D models, their
+						islands will appear here.
 					</p>
 					<a
 						href="{base}/"
@@ -148,10 +141,7 @@
 				<div class="glass rounded-xl p-3 text-[11px] text-slate-400">
 					<div class="mb-1.5 flex items-center justify-between">
 						<span class="font-medium text-slate-300">Controls</span>
-						<button
-							onclick={() => (showControls = false)}
-							class="text-slate-500 hover:text-white"
-						>
+						<button onclick={() => (showControls = false)} class="text-slate-500 hover:text-white">
 							<X class="h-3 w-3" />
 						</button>
 					</div>
