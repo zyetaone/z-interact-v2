@@ -1,24 +1,28 @@
 <script lang="ts">
 	import { T, useTask } from '@threlte/core';
-	import { GLTF } from '@threlte/extras';
-	import { Box3, Vector3, type Mesh } from 'three';
+	import { GLTF, useTexture } from '@threlte/extras';
+	import { RepeatWrapping, Box3, Vector3 } from 'three';
+	import type { Group } from 'three';
 
 	let {
+		imageUrl,
 		glbUrl,
 		name,
 		position,
 		index = 0,
 		onclick
 	}: {
-		glbUrl: string;
+		imageUrl: string;
+		glbUrl?: string;
 		name: string;
 		position: [number, number, number];
 		index?: number;
 		onclick?: () => void;
 	} = $props();
 
-	let loaded = $state(false);
 	let floatY = $state(0);
+	let glbScale = $state(1);
+	let glbOffsetY = $state(0);
 
 	const px = $derived(position[0]);
 	const pz = $derived(position[2]);
@@ -28,30 +32,27 @@
 		floatY = Math.sin(performance.now() * 0.001 + index) * 0.3;
 	});
 
-	function onGltfLoad(gltf: { scene: import('three').Group }) {
-		const glbScene = gltf.scene;
+	// Load workspace image as texture (fallback for when no GLB)
+	const texture = useTexture(imageUrl, {
+		transform: (tex) => {
+			tex.wrapS = RepeatWrapping;
+			tex.wrapT = RepeatWrapping;
+			return tex;
+		}
+	});
 
-		// Normalize size to fit on island
-		const box = new Box3().setFromObject(glbScene);
-		const size = box.getSize(new Vector3());
+	// Auto-fit GLB model to island bounds when loaded
+	function handleGltfLoad(ref: { scene: Group }) {
+		const box = new Box3().setFromObject(ref.scene);
+		const size = new Vector3();
+		box.getSize(size);
 		const maxDim = Math.max(size.x, size.y, size.z);
-		const scale = 4 / maxDim;
-		glbScene.scale.setScalar(scale);
-
-		// Center on island (raised to sit on top of the hex platform)
-		const center = box.getCenter(new Vector3());
-		glbScene.position.set(px - center.x * scale, 0.75 - box.min.y * scale, pz - center.z * scale);
-
-		// Enable shadows on all meshes
-		glbScene.traverse((child) => {
-			const mesh = child as Mesh;
-			if (mesh.isMesh) {
-				mesh.castShadow = true;
-				mesh.receiveShadow = true;
-			}
-		});
-
-		loaded = true;
+		// Scale to fit within ~4 units (island is ~5 units diameter)
+		glbScale = maxDim > 0 ? 4 / maxDim : 1;
+		// Center vertically on island
+		const center = new Vector3();
+		box.getCenter(center);
+		glbOffsetY = -center.y * glbScale + 0.76;
 	}
 
 	function createLabelCanvas(text: string): HTMLCanvasElement {
@@ -81,38 +82,83 @@
 	}
 
 	const labelCanvas = $derived(createLabelCanvas(name));
+
+	// Room dimensions (fallback)
+	const wallW = 3.6;
+	const wallH = 2.8;
+	const floorD = 2.8;
+	const wallThickness = 0.06;
+	const baseY = 0.76;
 </script>
 
 <!-- Floating island group -->
 <T.Group position.y={floatY}>
-	<!-- Hexagonal island base (CylinderGeometry with 6 segments = hexagon) -->
-	<T.Mesh position={[px, 0, pz]} receiveShadow castShadow>
+	<!-- Hexagonal island base -->
+	<T.Mesh position={[px, 0, pz]} receiveShadow castShadow {onclick}>
 		<T.CylinderGeometry args={[2.5, 2, 1.5, 6]} />
 		<T.MeshStandardMaterial color={0x2d5016} roughness={0.8} metalness={0.1} />
 	</T.Mesh>
 
-	<!-- Placeholder wireframe (shown until GLB loads) -->
-	{#if !loaded}
-		<T.Mesh position={[px, 2, pz]} {onclick}>
-			<T.BoxGeometry args={[3, 2.5, 3]} />
-			<T.MeshStandardMaterial color={0x6d28d9} transparent opacity={0.15} wireframe />
-		</T.Mesh>
+	{#if glbUrl}
+		<!-- GLB 3D model (replaces room corner) -->
+		<T.Group position={[px, glbOffsetY, pz]} scale={[glbScale, glbScale, glbScale]}>
+			<GLTF
+				url={glbUrl}
+				onload={handleGltfLoad}
+				onerror={() => {
+					/* GLB load failed — room corner fallback renders below */
+				}}
+			/>
+		</T.Group>
+	{:else}
+		<!-- Room corner fallback (no GLB available) -->
+		<T.Group position={[px - wallW / 4, baseY, pz + floorD / 4]}>
+			<!-- Floor -->
+			<T.Mesh rotation.x={-Math.PI / 2} position.y={0} receiveShadow {onclick}>
+				<T.PlaneGeometry args={[wallW, floorD]} />
+				<T.MeshStandardMaterial color={0x8b7355} roughness={0.85} metalness={0.05} />
+			</T.Mesh>
+
+			<!-- Back wall (image texture) -->
+			<T.Mesh position={[0, wallH / 2, -floorD / 2]} receiveShadow castShadow {onclick}>
+				<T.PlaneGeometry args={[wallW, wallH]} />
+				{#if $texture}
+					<T.MeshStandardMaterial map={$texture} roughness={0.35} metalness={0.0} />
+				{:else}
+					<T.MeshStandardMaterial color={0xe8e0d0} roughness={0.6} />
+				{/if}
+			</T.Mesh>
+
+			<!-- Side wall -->
+			<T.Mesh
+				position={[-wallW / 2, wallH / 2, 0]}
+				rotation.y={Math.PI / 2}
+				receiveShadow
+				castShadow
+				{onclick}
+			>
+				<T.PlaneGeometry args={[floorD, wallH]} />
+				<T.MeshStandardMaterial color={0xd0c8b8} roughness={0.7} metalness={0.0} />
+			</T.Mesh>
+
+			<!-- Baseboard trim - back wall -->
+			<T.Mesh position={[0, 0.06, -floorD / 2 + wallThickness / 2]}>
+				<T.BoxGeometry args={[wallW, 0.12, wallThickness]} />
+				<T.MeshStandardMaterial color={0x5c4a3a} roughness={0.6} />
+			</T.Mesh>
+
+			<!-- Baseboard trim - side wall -->
+			<T.Mesh position={[-wallW / 2 + wallThickness / 2, 0.06, 0]}>
+				<T.BoxGeometry args={[wallThickness, 0.12, floorD]} />
+				<T.MeshStandardMaterial color={0x5c4a3a} roughness={0.6} />
+			</T.Mesh>
+		</T.Group>
 	{/if}
 
 	<!-- Label sprite -->
 	<T.Sprite position={[px, 5.5, pz]} scale={[4, 1, 1]}>
 		<T.SpriteMaterial transparent>
-			<T.CanvasTexture attach="map" image={labelCanvas} />
+			<T.CanvasTexture args={[labelCanvas]} attach="map" />
 		</T.SpriteMaterial>
 	</T.Sprite>
-
-	<!-- GLB model -->
-	<GLTF
-		url={glbUrl}
-		oncreate={(ref) => onGltfLoad({ scene: ref })}
-		onerror={() => {
-			loaded = true;
-		}}
-		{onclick}
-	/>
 </T.Group>

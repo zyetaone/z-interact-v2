@@ -8,10 +8,12 @@
 
 	let {
 		models = [],
+		totalSlots,
 		onroomselect,
 		controls = $bindable<SceneControls | null>(null)
 	}: {
 		models: IslandModel[];
+		totalSlots?: number;
 		onroomselect?: (room: IslandModel | null) => void;
 		controls?: SceneControls | null;
 	} = $props();
@@ -23,11 +25,12 @@
 	scene.fog = new FogExp2(0x0a0e1a, 0.015);
 
 	// Grid layout
-	const cols = $derived(Math.max(Math.ceil(Math.sqrt(models.length)), 1));
+	const slotCount = $derived(Math.max(totalSlots ?? models.length, models.length));
+	const cols = $derived(Math.max(Math.ceil(Math.sqrt(slotCount)), 1));
 	const spacing = 9;
 
 	function gridPosition(index: number): [number, number, number] {
-		const rows = Math.ceil(models.length / cols);
+		const rows = Math.ceil(slotCount / cols);
 		const col = index % cols;
 		const row = Math.floor(index / cols);
 		const x = (col - (cols - 1) / 2) * spacing;
@@ -45,7 +48,7 @@
 			rotation: number;
 			length: number;
 		}[] = [];
-		const rows = Math.ceil(models.length / cols);
+		const rows = Math.ceil(slotCount / cols);
 
 		for (let i = 0; i < models.length; i++) {
 			const col = i % cols;
@@ -258,6 +261,7 @@
 {#each models as model, i (model.id)}
 	{@const pos = gridPosition(i)}
 	<RoomModel
+		imageUrl={model.imageUrl}
 		glbUrl={model.glbUrl}
 		name={model.name}
 		position={pos}
@@ -266,6 +270,30 @@
 			if (!isTransitioning) tweenTo(pos, model);
 		}}
 	/>
+{/each}
+
+<!-- Placeholder hexagonal slots for empty positions -->
+{#each Array.from({ length: slotCount - models.length }, (__, i) => i) as j (j)}
+	{@const emptyIndex = models.length + j}
+	{@const pos = gridPosition(emptyIndex)}
+	<T.Group position.y={Math.sin(performance.now() * 0.0005 + emptyIndex) * 0.1}>
+		<!-- Ghost hexagonal base -->
+		<T.Mesh position={[pos[0], -0.3, pos[2]]}>
+			<T.CylinderGeometry args={[2.5, 2, 0.3, 6]} />
+			<T.MeshStandardMaterial
+				color={0x1a1f36}
+				transparent
+				opacity={0.3}
+				roughness={0.9}
+				wireframe
+			/>
+		</T.Mesh>
+		<!-- Dashed ring to indicate empty slot -->
+		<T.Mesh position={[pos[0], 0, pos[2]]} rotation.x={-Math.PI / 2}>
+			<T.RingGeometry args={[2.2, 2.5, 6]} />
+			<T.MeshBasicMaterial color={0x4a3f6b} transparent opacity={0.2} side={2} />
+		</T.Mesh>
+	</T.Group>
 {/each}
 
 <!-- Bridges between adjacent islands -->
