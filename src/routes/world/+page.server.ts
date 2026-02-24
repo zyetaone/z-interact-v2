@@ -13,6 +13,9 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		getSessionSpaces(sessionId)
 	]);
 
+	const allComplete =
+		allSpaces.length > 0 && allSpaces.every((s) => s.status === 'complete' && s.glbUrl);
+
 	return {
 		models: completedSpaces
 			.filter((s) => s.glbUrl)
@@ -29,6 +32,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 				id: s.id,
 				name: s.name,
 				imageUrl: s.currentImageUrl
-			}))
+			})),
+		allComplete,
+		totalSpaces: allSpaces.length
 	};
 };

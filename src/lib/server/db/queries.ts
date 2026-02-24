@@ -26,7 +26,7 @@ export function getSession(id: string) {
 
 export function updateSession(
 	id: string,
-	data: Partial<Pick<NewSession, 'name' | 'questCompleted'>>
+	data: Partial<Pick<NewSession, 'name' | 'questCompleted' | 'archetype'>>
 ) {
 	return db()
 		.update(sessions)
@@ -265,4 +265,23 @@ export async function deleteEditNode(spaceId: string, nodeId: string) {
 			.catch(() => {});
 		throw e;
 	}
+}
+
+// --- Seed Content ---
+
+export function createSeedSession(archetype: string) {
+	return db()
+		.insert(sessions)
+		.values({
+			name: 'Seed Explorer',
+			questCompleted: true,
+			archetype,
+			isSeed: true
+		})
+		.returning()
+		.get();
+}
+
+export function getSeedSessions() {
+	return db().select().from(sessions).where(eq(sessions.isSeed, true)).all();
 }

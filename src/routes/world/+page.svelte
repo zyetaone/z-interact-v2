@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { base } from '$app/paths';
+	import { browser } from '$app/environment';
+	import { fade, scale } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import IsometricScene, {
 		type IslandModel,
 		type SceneControls
@@ -24,6 +27,24 @@
 	let avatarActive = $state(false);
 	let sceneControls = $state<SceneControls | null>(null);
 	let showControls = $state(true);
+	let showWorldModal = $state(false);
+
+	// Check on mount if we should show the world-unlocked reveal
+	$effect(() => {
+		if (browser && data.allComplete && data.models.length > 0) {
+			const revealed = localStorage.getItem('world-revealed');
+			if (!revealed) {
+				showWorldModal = true;
+			}
+		}
+	});
+
+	function dismissWorldModal() {
+		showWorldModal = false;
+		if (browser) {
+			localStorage.setItem('world-revealed', 'true');
+		}
+	}
 
 	function handleRoomSelect(room: IslandModel | null) {
 		selectedRoom = room;
@@ -70,8 +91,52 @@
 </svelte:head>
 
 <div class="relative h-screen w-screen overflow-hidden bg-slate-950">
+	<!-- World Unlocked Modal -->
+	{#if showWorldModal}
+		<div
+			class="fixed inset-0 z-[100] flex items-center justify-center"
+			transition:fade={{ duration: 500 }}
+		>
+			<div class="absolute inset-0 bg-black/95 backdrop-blur-xl"></div>
+			<div
+				class="relative z-10 flex flex-col items-center px-6 text-center"
+				in:scale={{ duration: 600, start: 0.85, easing: cubicOut }}
+			>
+				<!-- Island count -->
+				<div
+					class="mb-6 flex h-24 w-24 items-center justify-center rounded-full border-2 border-purple-400/50 bg-purple-500/20"
+					in:scale={{ delay: 500, duration: 500, start: 0.5, easing: cubicOut }}
+				>
+					<span class="text-4xl font-bold text-purple-300">{data.models.length}</span>
+				</div>
+
+				<!-- Title -->
+				<h1
+					class="mb-3 text-4xl font-extrabold text-white sm:text-5xl"
+					in:fade={{ delay: 800, duration: 500 }}
+				>
+					Your World Is Complete
+				</h1>
+
+				<p class="mb-8 max-w-md text-lg text-slate-400" in:fade={{ delay: 1000, duration: 500 }}>
+					{data.models.length} floating islands, crafted by your choices and imagination.
+				</p>
+
+				<!-- CTA -->
+				<button
+					onclick={dismissWorldModal}
+					class="pulse-glow inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-purple-500"
+					in:fade={{ delay: 1300, duration: 400 }}
+				>
+					<Globe class="h-5 w-5" />
+					Explore Your World
+				</button>
+			</div>
+		</div>
+	{/if}
+
 	<!-- Scene -->
-	<div class="absolute inset-0">
+	<div class="absolute inset-0" in:fade={{ duration: 800, delay: showWorldModal ? 0 : 200 }}>
 		{#if data.models.length > 0}
 			<IsometricScene
 				models={data.models}
@@ -290,5 +355,19 @@
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 3px;
 		color: #94a3b8;
+	}
+
+	.pulse-glow {
+		animation: pulse-glow 2s ease-in-out infinite;
+	}
+
+	@keyframes pulse-glow {
+		0%,
+		100% {
+			box-shadow: 0 0 20px rgba(147, 51, 234, 0.3);
+		}
+		50% {
+			box-shadow: 0 0 40px rgba(147, 51, 234, 0.6);
+		}
 	}
 </style>
