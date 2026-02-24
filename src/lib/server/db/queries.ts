@@ -210,7 +210,9 @@ export async function addEditNode(
 			.delete(editHistory)
 			.where(eq(editHistory.id, nodeId))
 			.run()
-			.catch(() => {});
+			.catch((rollbackErr) => {
+				console.error('Failed to rollback orphaned edit node', nodeId, rollbackErr);
+			});
 		throw e;
 	}
 }
@@ -282,7 +284,9 @@ export async function deleteEditNode(spaceId: string, nodeId: string) {
 				prompt: node.prompt
 			})
 			.run()
-			.catch(() => {});
+			.catch((rollbackErr) => {
+				console.error('Failed to rollback deleted edit node', node.id, rollbackErr);
+			});
 		throw e;
 	}
 }
