@@ -91,7 +91,7 @@
 						e.stopPropagation();
 						ondelete?.(node.id);
 					}}
-					class="flex h-6 w-6 items-center justify-center rounded text-slate-500 opacity-0 transition-all group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-rose-500/20 hover:text-rose-400"
+					class="flex h-6 w-6 items-center justify-center rounded text-slate-500 opacity-0 transition-all group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-rose-500/20 hover:text-rose-400"
 					title="Delete version"
 					aria-label="Delete version {node.versionLabel}"
 				>

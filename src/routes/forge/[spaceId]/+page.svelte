@@ -732,7 +732,10 @@
 	<!-- Space Forged Modal -->
 	{#if workspace.showCompletionModal}
 		<div
-			class="fixed inset-0 z-[100] flex items-center justify-center" role="dialog" aria-modal="true" aria-label="Space forged"
+			class="fixed inset-0 z-[100] flex items-center justify-center"
+			role="dialog"
+			aria-modal="true"
+			aria-label="Space forged"
 			transition:fade={{ duration: 300 }}
 		>
 			<div class="absolute inset-0 bg-black/90 backdrop-blur-xl"></div>

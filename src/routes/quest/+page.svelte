@@ -299,7 +299,11 @@
 </div>
 
 <!-- Personality Reveal Modal -->
-<CinematicModal open={showReveal} onclose={() => (showReveal = false)}>
+<CinematicModal
+	open={showReveal}
+	onclose={() => (showReveal = false)}
+	label="Your workspace personality"
+>
 	{#if revealArchetype}
 		<!-- Stagger-animated content -->
 		<div

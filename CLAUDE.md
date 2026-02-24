@@ -92,27 +92,27 @@ Svelte 5 class-based reactive state using `$state` and `$derived` runes. Manages
 
 ### Routing
 
-| Route                | Purpose                                                      |
-| -------------------- | ------------------------------------------------------------ |
-| `/`                  | Landing page / returning user dashboard                      |
-| `/quest`             | Interactive 5-step binary-choice quiz                        |
-| `/forge/[spaceId]`   | AI workspace editor (mask + prompt → inpainting)             |
-| `/world`             | 3D isometric scene (Three.js, image panels on hex islands)   |
-| `/metaverse`         | Shared gallery of all completed worlds                       |
+| Route              | Purpose                                                    |
+| ------------------ | ---------------------------------------------------------- |
+| `/`                | Landing page / returning user dashboard                    |
+| `/quest`           | Interactive 5-step binary-choice quiz                      |
+| `/forge/[spaceId]` | AI workspace editor (mask + prompt → inpainting)           |
+| `/world`           | 3D isometric scene (Three.js, image panels on hex islands) |
+| `/metaverse`       | Shared gallery of all completed worlds                     |
 
 ### API Routes
 
-| Endpoint           | Method | Purpose                                        |
-| ------------------ | ------ | ---------------------------------------------- |
-| `/api/iso`         | GET    | List all completed spaces                      |
-| `/api/iso`         | POST   | Mark a space as complete                       |
-| `/api/upload`      | POST   | Upload image to R2 (10MB max, JPEG/PNG/WebP)   |
-| `/api/r2/[...key]` | GET    | Local dev R2 proxy (UUID-format keys only)     |
-| `/api/video`       | GET/POST | List locked images / generate video clip     |
-| `/api/reorder`     | POST   | Save island arrangement order                  |
-| `/api/session`     | DELETE | Clear session cookie (server-side)             |
-| `/api/seed`        | POST   | Create seed content for demos                  |
-| `/api/cleanup`     | POST   | Remove stale sessions (bearer-token protected) |
+| Endpoint           | Method   | Purpose                                        |
+| ------------------ | -------- | ---------------------------------------------- |
+| `/api/iso`         | GET      | List all completed spaces                      |
+| `/api/iso`         | POST     | Mark a space as complete                       |
+| `/api/upload`      | POST     | Upload image to R2 (10MB max, JPEG/PNG/WebP)   |
+| `/api/r2/[...key]` | GET      | Local dev R2 proxy (UUID-format keys only)     |
+| `/api/video`       | GET/POST | List locked images / generate video clip       |
+| `/api/reorder`     | POST     | Save island arrangement order                  |
+| `/api/session`     | DELETE   | Clear session cookie (server-side)             |
+| `/api/seed`        | POST     | Create seed content for demos                  |
+| `/api/cleanup`     | POST     | Remove stale sessions (bearer-token protected) |
 
 ### Config
 

@@ -6,10 +6,12 @@
 	let {
 		open = false,
 		onclose,
+		label = 'Modal dialog',
 		children
 	}: {
 		open: boolean;
 		onclose?: () => void;
+		label?: string;
 		children?: Snippet;
 	} = $props();
 
@@ -63,6 +65,7 @@
 		class="fixed inset-0 z-[100] flex items-center justify-center"
 		role="dialog"
 		aria-modal="true"
+		aria-label={label}
 		tabindex="-1"
 		bind:this={modalEl}
 		onkeydown={handleKeydown}
