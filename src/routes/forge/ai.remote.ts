@@ -3,8 +3,8 @@ import { command, getRequestEvent } from '$app/server';
 import {
 	createImageEditor,
 	createImageSegmenter,
-	resolveImageForFal,
-	generateGlb
+	generateGlb,
+	resolveImageForFal
 } from '$lib/server/ai/index';
 import { persistImage, persistGlb } from '$lib/server/storage';
 import { getSpace, addEditNode, deleteEditNode, updateSpace } from '$lib/server/db/queries';
@@ -140,17 +140,24 @@ export const completeSpace = command(CompleteSpaceSchema, async (data) => {
 	if (!space) throw new Error('Space not found');
 	if (space.sessionId !== sessionId) throw new Error('Forbidden');
 
-	if (space.status === 'complete' && space.glbUrl) {
+	if (space.status === 'complete') {
 		return { space };
 	}
 
-	const falUrl = await resolveImageForFal(space.currentImageUrl);
-	const { glbUrl } = await generateGlb({ imageUrl: falUrl });
-	const persistedGlb = await persistGlb(glbUrl);
+	// Generate 3D model from workspace image (graceful degradation on failure)
+	let glbUrl: string | null = null;
+	try {
+		const falImageUrl = await resolveImageForFal(space.currentImageUrl);
+		const glbResult = await generateGlb({ imageUrl: falImageUrl });
+		glbUrl = await persistGlb(glbResult.glbUrl);
+	} catch {
+		// GLB generation failed — space still completes, World shows room corner fallback
+		console.warn(`GLB generation failed for space ${data.spaceId}, completing without 3D model`);
+	}
 
 	const updatedSpace = await updateSpace(data.spaceId, {
 		status: 'complete',
-		glbUrl: persistedGlb
+		glbUrl
 	});
 
 	return { space: updatedSpace };
