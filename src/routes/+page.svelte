@@ -1,8 +1,17 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { browser } from '$app/environment';
 	import { Sparkles, ArrowRight, Globe, Hammer, Fingerprint, RotateCcw } from '@lucide/svelte';
 	import { ARCHETYPES } from '$lib/config/archetypes';
+	import { toast } from '$lib/toast.svelte';
 
 	let { data } = $props();
+
+	// Show toast if redirected here due to expired session
+	if (browser && page.url.searchParams.has('expired')) {
+		toast('Your session ended. Start a new quest to continue.', 'info');
+		history.replaceState({}, '', '/');
+	}
 
 	const archetypeInfo = $derived(ARCHETYPES.find((a) => a.key === data.archetype));
 

@@ -5,6 +5,7 @@
 	import EditorBar from '$lib/components/EditorBar.svelte';
 	import CommandBar from '$lib/components/CommandBar.svelte';
 	import BottomSheet from '$lib/components/BottomSheet.svelte';
+	import { beforeNavigate } from '$app/navigation';
 	import { maskCanvas } from '$lib/actions/mask-canvas.svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
@@ -35,6 +36,13 @@
 	let commandBarRef: ReturnType<typeof CommandBar> | undefined = $state();
 	let errorTimer: ReturnType<typeof setTimeout> | undefined;
 	let magicClickPos = $state<{ x: number; y: number } | null>(null);
+
+	// Warn before navigating away with unsaved work
+	beforeNavigate(({ cancel }) => {
+		if (workspace.isProcessing || editor.hasMask) {
+			if (!confirm('You have unsaved work. Leave anyway?')) cancel();
+		}
+	});
 
 	// Viewer state (inline, replaces deleted viewer.svelte.ts)
 	let imgRef = $state<HTMLImageElement | undefined>();

@@ -5,7 +5,7 @@
 	import { QUEST_STEPS } from '$lib/config/quest';
 	import { computeArchetype, type Archetype } from '$lib/config/archetypes';
 	import CinematicModal from '$lib/components/CinematicModal.svelte';
-	import { Sparkles, ArrowRight, ChevronRight, Fingerprint } from '@lucide/svelte';
+	import { Sparkles, ArrowRight, ChevronLeft, ChevronRight, Fingerprint } from '@lucide/svelte';
 	import { saveQuest } from './ai.remote';
 	import { fly, scale } from 'svelte/transition';
 
@@ -124,6 +124,17 @@
 			></div>
 		</div>
 	</div>
+
+	<!-- Top-left exit link (visible during quiz) -->
+	{#if !engine.isComplete}
+		<a
+			href="/"
+			class="fixed top-4 left-4 z-40 inline-flex items-center gap-1 rounded-full bg-white/5 px-3 py-1.5 text-xs text-slate-400 backdrop-blur-sm transition-colors hover:bg-white/10 hover:text-slate-200"
+		>
+			<ChevronLeft class="h-3 w-3" />
+			Exit
+		</a>
+	{/if}
 
 	{#if !engine.isComplete}
 		<!-- Quest step -->

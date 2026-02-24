@@ -4,7 +4,7 @@ import { getSpace, getEditHistory, getSessionSpaces } from '$lib/server/db/queri
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
 	const sessionId = cookies.get('session_id');
-	if (!sessionId) redirect(302, '/');
+	if (!sessionId) redirect(302, '/?expired');
 
 	const space = await getSpace(params.spaceId);
 	if (!space) throw error(404, 'Space not found');

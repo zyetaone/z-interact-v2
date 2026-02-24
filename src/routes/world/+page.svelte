@@ -3,6 +3,7 @@
 	import { browser } from '$app/environment';
 	import { fade, scale, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
+	import { toast } from '$lib/toast.svelte';
 	import IsometricScene, {
 		type IslandModel,
 		type SceneControls
@@ -95,9 +96,12 @@
 					}
 				];
 				pendingSpaces = pendingSpaces.filter((ws) => ws.id !== spaceId);
+				toast(`${completed.name} added to your world`, 'success');
 			}
 		} catch (e) {
-			completeError = e instanceof Error ? e.message : 'Failed';
+			const msg = e instanceof Error ? e.message : 'Failed to complete space';
+			toast(msg, 'error');
+			completeError = msg;
 		} finally {
 			isCompleting = null;
 		}

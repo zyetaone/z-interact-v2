@@ -4,11 +4,11 @@ import { redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const sessionId = cookies.get('session_id');
-	if (!sessionId) redirect(302, '/');
+	if (!sessionId) redirect(302, '/?expired');
 	const session = await getSession(sessionId);
 	if (!session) {
 		cookies.delete('session_id', { path: '/' });
-		redirect(302, '/');
+		redirect(302, '/?expired');
 	}
 
 	const [completedSpaces, allSpaces] = await Promise.all([
