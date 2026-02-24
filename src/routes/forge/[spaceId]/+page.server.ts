@@ -1,10 +1,10 @@
 import type { PageServerLoad } from './$types';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { getSpace, getEditHistory, getSessionSpaces } from '$lib/server/db/queries';
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
 	const sessionId = cookies.get('session_id');
-	if (!sessionId) throw error(401, 'No session');
+	if (!sessionId) redirect(302, '/');
 
 	const space = await getSpace(params.spaceId);
 	if (!space) throw error(404, 'Space not found');

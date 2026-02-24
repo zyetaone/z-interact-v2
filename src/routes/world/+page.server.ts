@@ -6,7 +6,10 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	const sessionId = cookies.get('session_id');
 	if (!sessionId) redirect(302, '/');
 	const session = await getSession(sessionId);
-	if (!session) redirect(302, '/');
+	if (!session) {
+		cookies.delete('session_id', { path: '/' });
+		redirect(302, '/');
+	}
 
 	const [completedSpaces, allSpaces] = await Promise.all([
 		getCompletedSpaces(sessionId),
