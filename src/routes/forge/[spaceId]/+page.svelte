@@ -20,7 +20,8 @@
 		ArrowLeft,
 		Check,
 		Globe,
-		Hammer
+		Hammer,
+		GitBranch
 	} from '@lucide/svelte';
 	import { generateMaskFromShapes } from '$lib/utils/mask';
 	import { segmentObject } from '../ai.remote';
@@ -373,6 +374,7 @@
 								: 'text-slate-400 hover:bg-white/10 hover:text-white'}"
 							title="Rectangle Select"
 							aria-label="Rectangle Select"
+							aria-pressed={editor.maskTool === 'draw'}
 						>
 							<Square class="h-5 w-5 md:h-4 md:w-4" />
 						</button>
@@ -384,6 +386,7 @@
 								: 'text-slate-400 hover:bg-white/10 hover:text-white'}"
 							title="Brush Tool"
 							aria-label="Brush Tool"
+							aria-pressed={editor.maskTool === 'brush'}
 						>
 							<Paintbrush class="h-5 w-5 md:h-4 md:w-4" />
 						</button>
@@ -395,6 +398,7 @@
 								: 'text-slate-400 hover:bg-white/10 hover:text-white'}"
 							title="Polygon Tool"
 							aria-label="Polygon Tool"
+							aria-pressed={editor.maskTool === 'poly'}
 						>
 							<Pentagon class="h-5 w-5 md:h-4 md:w-4" />
 						</button>
@@ -406,6 +410,7 @@
 								: 'text-slate-400 hover:bg-white/10 hover:text-white'}"
 							title="Magic Wand (AI Select)"
 							aria-label="Magic Wand"
+							aria-pressed={editor.maskTool === 'magic'}
 						>
 							<Wand2 class="h-5 w-5 md:h-4 md:w-4" />
 						</button>
@@ -478,6 +483,13 @@
 						{/if}
 					{/if}
 				</div>
+
+				<!-- Onboarding hint -->
+				{#if workspace.versions.length === 0 && !workspace.isProcessing}
+					<div class="mt-3 text-center text-sm text-slate-400">
+						Select an area to edit, or describe a change below
+					</div>
+				{/if}
 
 				<!-- Desktop CommandBar: anchored below canvas -->
 				{#if !isMobile}
@@ -576,27 +588,25 @@
 									{/each}
 								</div>
 
-								<details class="mt-2">
-									<summary
-										class="cursor-pointer text-[10px] font-medium text-slate-500 hover:text-slate-300"
-										>Show tree view</summary
-									>
-									<div class="mt-2">
-										<VersionTree
-											tree={workspace.tree}
-											activeId={workspace.activeId}
-											compareId={workspace.compareId}
-											onselect={(id, e) => {
-												if (e.altKey) {
-													workspace.setCompareTarget(id);
-												} else {
-													workspace.activate(id);
-												}
-											}}
-											ondelete={(id) => workspace.delete(id)}
-										/>
+								<div class="mt-3">
+									<div class="mb-1.5 flex items-center gap-1.5">
+										<GitBranch class="h-3 w-3 text-slate-400" />
+										<span class="text-[10px] font-medium text-slate-400">Branch History</span>
 									</div>
-								</details>
+									<VersionTree
+										tree={workspace.tree}
+										activeId={workspace.activeId}
+										compareId={workspace.compareId}
+										onselect={(id, e) => {
+											if (e.altKey) {
+												workspace.setCompareTarget(id);
+											} else {
+												workspace.activate(id);
+											}
+										}}
+										ondelete={(id) => workspace.delete(id)}
+									/>
+								</div>
 							</div>
 						{/if}
 
