@@ -1,10 +1,15 @@
 <script lang="ts">
-	import { Sparkles, ArrowRight, Globe, Hammer, Fingerprint } from '@lucide/svelte';
+	import { Sparkles, ArrowRight, Globe, Hammer, Fingerprint, RotateCcw } from '@lucide/svelte';
 	import { ARCHETYPES } from '$lib/config/archetypes';
 
 	let { data } = $props();
 
 	const archetypeInfo = $derived(ARCHETYPES.find((a) => a.key === data.archetype));
+
+	function resetSession() {
+		document.cookie = 'session_id=; path=/; max-age=0';
+		window.location.reload();
+	}
 </script>
 
 <svelte:head>
@@ -94,6 +99,15 @@
 					Enter World
 				</a>
 			</div>
+
+			<!-- Reset -->
+			<button
+				onclick={resetSession}
+				class="mt-8 inline-flex items-center gap-1.5 text-xs text-slate-500 transition-colors hover:text-slate-300"
+			>
+				<RotateCcw class="h-3 w-3" />
+				Start Over
+			</button>
 		</main>
 	{:else}
 		<!-- New user -->
