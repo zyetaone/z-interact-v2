@@ -6,6 +6,11 @@
 
 	const archetypeInfo = $derived(ARCHETYPES.find((a) => a.key === data.archetype));
 
+	// Link to the first incomplete space, or the first space if all complete
+	const nextSpaceId = $derived(
+		data.spaces.find((s) => s.status !== 'complete')?.id ?? data.spaces[0]?.id ?? ''
+	);
+
 	function resetSession() {
 		document.cookie = 'session_id=; path=/; max-age=0';
 		window.location.reload();
@@ -72,9 +77,13 @@
 										? 'bg-emerald-500/10 text-emerald-300'
 										: space.status === 'forging'
 											? 'bg-amber-500/10 text-amber-300'
-											: 'bg-slate-500/10 text-slate-400'}"
+											: 'bg-purple-500/10 text-purple-300'}"
 								>
-									{space.status}
+									{space.status === 'complete'
+										? 'Complete'
+										: space.status === 'forging'
+											? 'Forging'
+											: 'Ready to forge'}
 								</span>
 							</div>
 						</a>
@@ -85,7 +94,7 @@
 			<!-- Actions -->
 			<div class="flex flex-wrap justify-center gap-4">
 				<a
-					href="/forge/{data.spaces[0]?.id ?? ''}"
+					href="/forge/{nextSpaceId}"
 					class="inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-purple-500"
 				>
 					<Hammer class="h-5 w-5" />
