@@ -48,7 +48,6 @@ export const spaces = sqliteTable(
 		name: text('name').notNull(),
 		originalImageUrl: text('original_image_url').notNull(),
 		currentImageUrl: text('current_image_url').notNull(),
-		glbUrl: text('glb_url'),
 		status: text('status', { enum: ['quest', 'forging', 'complete'] })
 			.notNull()
 			.default('quest'),

@@ -14,7 +14,7 @@ const TRUSTED_DOMAINS = ['fal.media', 'v3.fal.media', 'v3b.fal.media', 'storage.
 interface PersistOptions {
 	/** Max file size in bytes */
 	maxSize: number;
-	/** File extension (e.g. 'png', 'glb') */
+	/** File extension (e.g. 'png') */
 	extension: string;
 	/** Fallback MIME type if response doesn't include content-type */
 	fallbackContentType: string;
@@ -27,13 +27,6 @@ const IMAGE_OPTIONS: PersistOptions = {
 	extension: 'png',
 	fallbackContentType: 'image/png',
 	label: 'Image'
-};
-
-const GLB_OPTIONS: PersistOptions = {
-	maxSize: 50 * 1024 * 1024, // 50MB
-	extension: 'glb',
-	fallbackContentType: 'model/gltf-binary',
-	label: 'GLB'
 };
 
 /**
@@ -102,9 +95,4 @@ async function persistToR2(sourceUrl: string, options: PersistOptions): Promise<
 /** Persist an AI-generated image to R2. */
 export function persistImage(sourceUrl: string): Promise<string> {
 	return persistToR2(sourceUrl, IMAGE_OPTIONS);
-}
-
-/** Persist a GLB 3D model to R2. */
-export function persistGlb(sourceUrl: string): Promise<string> {
-	return persistToR2(sourceUrl, GLB_OPTIONS);
 }

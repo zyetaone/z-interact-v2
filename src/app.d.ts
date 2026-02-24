@@ -78,6 +78,7 @@ interface Env {
 	CLOUDFLARE_AI_GATEWAY_ID?: string;
 	CLOUDFLARE_AIG_TOKEN?: string;
 	SEED_SECRET?: string;
+	CLEANUP_SECRET?: string;
 }
 
 declare global {

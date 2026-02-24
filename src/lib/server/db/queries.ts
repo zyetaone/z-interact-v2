@@ -104,7 +104,7 @@ export function getSessionSpaces(sessionId: string) {
 export function updateSpace(
 	id: string,
 	data: Partial<
-		Pick<NewSpace, 'currentImageUrl' | 'editCount' | 'status' | 'activeNodeId' | 'glbUrl' | 'name'>
+		Pick<NewSpace, 'currentImageUrl' | 'editCount' | 'status' | 'activeNodeId' | 'name'>
 	>
 ) {
 	return db()
