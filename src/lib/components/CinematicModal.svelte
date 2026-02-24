@@ -13,6 +13,8 @@
 		children?: Snippet;
 	} = $props();
 
+	let modalEl = $state<HTMLDivElement>();
+
 	$effect(() => {
 		if (open && typeof document !== 'undefined') {
 			document.body.style.overflow = 'hidden';
@@ -22,16 +24,48 @@
 		}
 	});
 
+	// Focus first focusable element when modal opens
+	$effect(() => {
+		if (open && modalEl) {
+			const focusable = modalEl.querySelectorAll<HTMLElement>(
+				'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+			);
+			if (focusable.length > 0) {
+				focusable[0].focus();
+			}
+		}
+	});
+
 	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter' && onclose) onclose();
+		if (e.key === 'Escape' && onclose) {
+			onclose();
+		}
+		if (e.key === 'Tab' && modalEl) {
+			const focusable = modalEl.querySelectorAll<HTMLElement>(
+				'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+			);
+			if (focusable.length === 0) return;
+			const first = focusable[0];
+			const last = focusable[focusable.length - 1];
+			if (e.shiftKey && document.activeElement === first) {
+				e.preventDefault();
+				last.focus();
+			} else if (!e.shiftKey && document.activeElement === last) {
+				e.preventDefault();
+				first.focus();
+			}
+		}
 	}
 </script>
-
-<svelte:window onkeydown={handleKeydown} />
 
 {#if open}
 	<div
 		class="fixed inset-0 z-[100] flex items-center justify-center"
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+		bind:this={modalEl}
+		onkeydown={handleKeydown}
 		transition:fade={{ duration: 300 }}
 	>
 		<!-- Backdrop -->

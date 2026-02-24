@@ -81,7 +81,21 @@
 				throw new Error(err.message || `HTTP ${res.status}`);
 			}
 
-			window.location.reload();
+			// Move from pending to models reactively (no page reload)
+			const completed = pendingSpaces.find((ws) => ws.id === spaceId);
+			if (completed) {
+				orderedModels = [
+					...orderedModels,
+					{
+						id: completed.id,
+						name: completed.name,
+						imageUrl: completed.imageUrl,
+						editCount: 0,
+						sortOrder: orderedModels.length
+					}
+				];
+				pendingSpaces = pendingSpaces.filter((ws) => ws.id !== spaceId);
+			}
 		} catch (e) {
 			completeError = e instanceof Error ? e.message : 'Failed';
 		} finally {
@@ -100,35 +114,24 @@
 		selectedRoom = null;
 	}
 
-	// --- Drag & Drop ---
-	function handleDragStart(index: number) {
+	// --- Pointer-based Drag & Drop (mobile-friendly) ---
+	function handlePointerDown(e: PointerEvent, index: number) {
 		draggedIdx = index;
+		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
 	}
 
-	function handleDragOver(e: DragEvent, index: number) {
-		e.preventDefault();
+	function handlePointerMove(e: PointerEvent, index: number) {
 		if (draggedIdx === null || draggedIdx === index) return;
 		dragOverIndex = index;
 	}
 
-	function handleDrop(index: number) {
-		if (draggedIdx === null || draggedIdx === index) {
-			draggedIdx = null;
-			dragOverIndex = null;
-			return;
+	function handlePointerUp() {
+		if (draggedIdx !== null && dragOverIndex !== null && draggedIdx !== dragOverIndex) {
+			const moved = orderedModels[draggedIdx];
+			const updated = orderedModels.filter((_, i) => i !== draggedIdx);
+			updated.splice(dragOverIndex, 0, moved);
+			orderedModels = updated;
 		}
-
-		// Reorder: move item from draggedIdx to index
-		const moved = orderedModels[draggedIdx];
-		const updated = orderedModels.filter((_, i) => i !== draggedIdx);
-		updated.splice(index, 0, moved);
-		orderedModels = updated;
-
-		draggedIdx = null;
-		dragOverIndex = null;
-	}
-
-	function handleDragEnd() {
 		draggedIdx = null;
 		dragOverIndex = null;
 	}
@@ -421,7 +424,7 @@
 	{/if}
 
 	<!-- Pending Spaces Panel -->
-	{#if data.pending.length > 0 && !selectedRoom && !showArrangePanel}
+	{#if pendingSpaces.length > 0 && !selectedRoom && !showArrangePanel}
 		<div class="absolute top-4 right-4 z-20 w-64 sm:top-6 sm:right-6">
 			<div class="glass rounded-xl p-4">
 				<div class="mb-3 flex items-center gap-2">
@@ -429,7 +432,7 @@
 					<h3 class="text-xs font-semibold text-white">In Progress</h3>
 				</div>
 				<div class="max-h-48 space-y-2 overflow-y-auto">
-					{#each data.pending as ws (ws.id)}
+					{#each pendingSpaces as ws (ws.id)}
 						<div class="flex items-center justify-between rounded-lg bg-white/5 p-2">
 							<div class="flex items-center gap-2">
 								<img src={ws.imageUrl} alt={ws.name} class="h-8 w-8 rounded object-cover" />
@@ -505,11 +508,9 @@
 					{#each orderedModels as model, i (model.id)}
 						<div
 							class="hex-cell group relative flex-shrink-0 cursor-grab select-none active:cursor-grabbing"
-							draggable="true"
-							ondragstart={() => handleDragStart(i)}
-							ondragover={(e) => handleDragOver(e, i)}
-							ondrop={() => handleDrop(i)}
-							ondragend={handleDragEnd}
+							onpointerdown={(e) => handlePointerDown(e, i)}
+							onpointermove={(e) => handlePointerMove(e, i)}
+							onpointerup={handlePointerUp}
 							role="listitem"
 						>
 							<!-- Position number -->
@@ -600,6 +601,7 @@
 		flex-direction: column;
 		align-items: center;
 		width: 80px;
+		touch-action: none;
 	}
 
 	.hex-shape {

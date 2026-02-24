@@ -143,7 +143,7 @@
 				</div>
 
 				<!-- Step counter -->
-				<p class="mb-2 text-sm text-slate-500">
+				<p class="mb-2 text-sm text-slate-400">
 					{engine.currentStep + 1} / {QUEST_STEPS.length}
 				</p>
 
@@ -279,7 +279,7 @@
 	<div class="pb-6 text-center">
 		<a
 			href="/"
-			class="inline-flex items-center gap-1 text-xs text-slate-500 transition-colors hover:text-slate-300"
+			class="inline-flex items-center gap-1 text-xs text-slate-400 transition-colors hover:text-slate-300"
 		>
 			<ChevronRight class="h-3 w-3 rotate-180" />
 			Back to home
