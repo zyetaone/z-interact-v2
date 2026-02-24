@@ -13,6 +13,8 @@ bun run dev              # Start Vite dev server (http://localhost:5173) with pl
 bun run build            # Production build for Cloudflare Workers
 bun run preview          # Preview production build locally
 bun run check            # Svelte type checking
+bun run test             # Run unit tests (vitest)
+bun run test:watch       # Run tests in watch mode
 bun run lint             # Prettier + ESLint checks
 bun run format           # Auto-format with Prettier
 bun run dev:wrangler     # Build + run with Wrangler (D1/R2 access)
@@ -37,7 +39,7 @@ Local dev uses `DATABASE_URL=file:local.db` (libSQL fallback). Production uses D
 - **Tailwind CSS 4** via `@tailwindcss/vite` plugin (forms + typography plugins)
 - **Drizzle ORM** with D1 (production) + `@libsql/client` (local dev fallback)
 - **Cloudflare Workers** via `@sveltejs/adapter-cloudflare` with D1 + R2 bindings
-- **fal.ai** — AI image editing (Flux Inpainting, Nano Banana Pro), segmentation (SAM2), video (MiniMax), 3D (Trellis-2)
+- **fal.ai** — AI image editing (Flux Inpainting, Nano Banana Pro), segmentation (SAM2)
 - **Valibot** — Schema validation for remote function inputs
 - **Three.js** — 3D scene rendering (isometric workspace viewer)
 - **Bun** package manager
@@ -102,17 +104,14 @@ Svelte 5 class-based reactive state using `$state` and `$derived` runes. Manages
 
 ### API Routes
 
-| Endpoint           | Method   | Purpose                                        |
-| ------------------ | -------- | ---------------------------------------------- |
-| `/api/iso`         | GET      | List all completed spaces                      |
-| `/api/iso`         | POST     | Mark a space as complete                       |
-| `/api/upload`      | POST     | Upload image to R2 (10MB max, JPEG/PNG/WebP)   |
-| `/api/r2/[...key]` | GET      | Local dev R2 proxy (UUID-format keys only)     |
-| `/api/video`       | GET/POST | List locked images / generate video clip       |
-| `/api/reorder`     | POST     | Save island arrangement order                  |
-| `/api/session`     | DELETE   | Clear session cookie (server-side)             |
-| `/api/seed`        | POST     | Create seed content for demos                  |
-| `/api/cleanup`     | POST     | Remove stale sessions (bearer-token protected) |
+| Endpoint           | Method | Purpose                                        |
+| ------------------ | ------ | ---------------------------------------------- |
+| `/api/upload`      | POST   | Upload image to R2 (10MB max, JPEG/PNG/WebP)   |
+| `/api/r2/[...key]` | GET    | Local dev R2 proxy (UUID-format keys only)     |
+| `/api/reorder`     | POST   | Save island arrangement order                  |
+| `/api/session`     | DELETE | Clear session cookie (server-side)             |
+| `/api/seed`        | POST   | Create seed content for demos                  |
+| `/api/cleanup`     | POST   | Remove stale sessions (bearer-token protected) |
 
 ### Config
 

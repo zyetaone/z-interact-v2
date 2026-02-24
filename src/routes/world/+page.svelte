@@ -21,6 +21,7 @@
 		GripVertical,
 		Check
 	} from '@lucide/svelte';
+	import { completeSpace } from '../forge/ai.remote';
 
 	let { data } = $props();
 
@@ -71,16 +72,7 @@
 		completeError = '';
 
 		try {
-			const res = await fetch('/api/iso', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ spaceId })
-			});
-
-			if (!res.ok) {
-				const err = await res.json().catch(() => ({ message: 'Failed to complete space' }));
-				throw new Error(err.message || `HTTP ${res.status}`);
-			}
+			await completeSpace({ spaceId });
 
 			// Move from pending to models reactively (no page reload)
 			const completed = pendingSpaces.find((ws) => ws.id === spaceId);

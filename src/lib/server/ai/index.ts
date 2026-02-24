@@ -11,12 +11,6 @@ export type {
 	SegmentResult
 } from './types';
 
-export type { VideoGenerateRequest, VideoGenerateResult } from './fal-video';
-export { generateVideoClip } from './fal-video';
-
-export { resolveImageForFal } from './fal-config';
-export { getWorkersAI } from './workers-ai';
-
 export function createImageEditor(): ImageEditor {
 	return createFalEditor();
 }
