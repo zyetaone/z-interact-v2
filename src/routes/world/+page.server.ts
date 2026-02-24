@@ -13,21 +13,22 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		getSessionSpaces(sessionId)
 	]);
 
-	const allComplete =
-		allSpaces.length > 0 && allSpaces.every((s) => s.status === 'complete' && s.glbUrl);
+	const allComplete = allSpaces.length > 0 && allSpaces.every((s) => s.status === 'complete');
 
 	return {
 		models: completedSpaces
-			.filter((s) => s.glbUrl)
+			.filter((s) => s.status === 'complete')
 			.map((s) => ({
 				id: s.id,
 				name: s.name,
 				imageUrl: s.currentImageUrl,
-				glbUrl: s.glbUrl!,
-				editCount: s.editCount
-			})),
+				glbUrl: s.glbUrl ?? undefined,
+				editCount: s.editCount,
+				sortOrder: s.sortOrder
+			}))
+			.sort((a, b) => a.sortOrder - b.sortOrder),
 		pending: allSpaces
-			.filter((s) => s.status !== 'complete' || !s.glbUrl)
+			.filter((s) => s.status !== 'complete')
 			.map((s) => ({
 				id: s.id,
 				name: s.name,

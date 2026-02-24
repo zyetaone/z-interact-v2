@@ -22,6 +22,7 @@ export class ForgeWorkspace {
 	versions = $state<Version[]>([]);
 	activeId = $state<string | null>(null);
 	status = $state<'forging' | 'complete'>('forging');
+	glbUrl = $state<string | null>(null);
 	editCount = $state(0);
 	originalImageUrl = $state('');
 	spaceId = $state('');
@@ -30,7 +31,6 @@ export class ForgeWorkspace {
 	errorMessage = $state('');
 	compareId = $state<string | null>(null);
 	isComparing = $state(false);
-	glbUrl = $state<string | null>(null);
 	allSpaces = $state<SpaceSummary[]>([]);
 	showCompletionModal = $state(false);
 
@@ -77,7 +77,7 @@ export class ForgeWorkspace {
 		this.editCount = init.space.editCount;
 		this.activeId = init.space.activeNodeId;
 		this.status = init.space.status === 'complete' ? 'complete' : 'forging';
-		this.glbUrl = init.space.glbUrl;
+		this.glbUrl = init.space.glbUrl ?? null;
 		this.versions = init.history;
 		this.allSpaces = init.allSpaces ?? [];
 	}
@@ -166,7 +166,7 @@ export class ForgeWorkspace {
 			);
 			this.showCompletionModal = true;
 		} catch (e) {
-			this.errorMessage = e instanceof Error ? e.message : '3D generation failed';
+			this.errorMessage = e instanceof Error ? e.message : 'Failed to complete space';
 		} finally {
 			this.isProcessing = false;
 		}

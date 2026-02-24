@@ -18,8 +18,6 @@
 		ChevronsLeftRight,
 		Sparkles,
 		ArrowLeft,
-		Box,
-		ExternalLink,
 		Check,
 		Globe,
 		Hammer
@@ -211,12 +209,12 @@
 			</div>
 
 			<div class="flex items-center gap-2">
-				{#if workspace.status === 'complete' && workspace.glbUrl}
+				{#if workspace.status === 'complete'}
 					<a
 						href="/world"
 						class="flex h-9 items-center gap-2 rounded-lg bg-emerald-600 px-3 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
 					>
-						<ExternalLink class="h-4 w-4" />
+						<Globe class="h-4 w-4" />
 						<span class="hidden sm:inline">View in World</span>
 					</a>
 				{/if}
@@ -266,14 +264,16 @@
 					</div>
 					<div class="text-center">
 						<h2 class="text-2xl font-bold text-white">Space Complete!</h2>
-						<p class="mt-2 text-slate-400">Your 3D model is being built in the World view.</p>
+						<p class="mt-2 text-slate-400">
+							Your space has been transformed into a 3D island. View it in the World.
+						</p>
 					</div>
 					<div class="flex gap-3">
 						<a
 							href="/world"
 							class="flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-3 font-medium text-white transition-colors hover:bg-emerald-500"
 						>
-							<Box class="h-5 w-5" />
+							<Globe class="h-5 w-5" />
 							View in World
 						</a>
 						<a
@@ -515,7 +515,7 @@
 							</button>
 						</div>
 
-						<!-- Complete & Build 3D button -->
+						<!-- Complete Space button -->
 						{#if workspace.isProcessing && workspace.versions.length > 0}
 							<div
 								class="flex items-center justify-center gap-3 rounded-lg bg-purple-600/50 px-4 py-3"
@@ -523,7 +523,7 @@
 								<div
 									class="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white"
 								></div>
-								<span class="text-sm font-medium text-white/80">Building 3D model...</span>
+								<span class="text-sm font-medium text-white/80">Generating 3D model...</span>
 							</div>
 						{:else if workspace.versions.length > 0}
 							<button
@@ -531,15 +531,15 @@
 								disabled={workspace.isProcessing || workspace.hasReachedLimit}
 								class="pulse-glow flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-3 font-medium text-white shadow-lg transition-all hover:bg-purple-500 hover:shadow-purple-500/25 disabled:opacity-40"
 							>
-								<Box class="h-5 w-5" />
-								Complete & Build 3D
+								<Globe class="h-5 w-5" />
+								Complete Space
 							</button>
 						{:else if workspace.isProcessing}
 							<div class="flex items-center justify-center gap-3 rounded-lg bg-white/5 px-4 py-3">
 								<div
 									class="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white"
 								></div>
-								<span class="text-sm font-medium text-white/80">Building 3D model...</span>
+								<span class="text-sm font-medium text-white/80">Generating 3D model...</span>
 							</div>
 						{:else}
 							<button
@@ -547,8 +547,8 @@
 								disabled={workspace.isProcessing}
 								class="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
 							>
-								<Box class="h-5 w-5" />
-								Skip Editing — Use As-Is
+								<Globe class="h-5 w-5" />
+								Complete — Use Original
 							</button>
 						{/if}
 
@@ -604,7 +604,8 @@
 						{#if workspace.hasReachedLimit}
 							<div class="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
 								<p class="text-xs font-medium text-amber-300">
-									Edit limit reached (20 max). Complete your space to build the 3D model.
+									Edit limit reached (20 max). Edit limit reached (20 max). Complete your space to
+									continue.
 								</p>
 							</div>
 						{/if}
@@ -654,7 +655,7 @@
 							<div
 								class="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white"
 							></div>
-							<span class="text-sm font-medium text-white/80">Building 3D model...</span>
+							<span class="text-sm font-medium text-white/80">Generating 3D model...</span>
 						</div>
 					{:else if workspace.versions.length > 0}
 						<button
@@ -662,15 +663,15 @@
 							disabled={workspace.isProcessing}
 							class="flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-3 font-medium text-white transition-colors hover:bg-purple-500 disabled:opacity-40"
 						>
-							<Box class="h-5 w-5" />
-							Complete & Build 3D
+							<Globe class="h-5 w-5" />
+							Complete Space
 						</button>
 					{:else if workspace.isProcessing}
 						<div class="flex items-center justify-center gap-3 rounded-lg bg-white/5 px-4 py-3">
 							<div
 								class="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white"
 							></div>
-							<span class="text-sm font-medium text-white/80">Building 3D model...</span>
+							<span class="text-sm font-medium text-white/80">Generating 3D model...</span>
 						</div>
 					{:else}
 						<button
@@ -678,8 +679,8 @@
 							disabled={workspace.isProcessing}
 							class="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
 						>
-							<Box class="h-5 w-5" />
-							Skip Editing — Use As-Is
+							<Globe class="h-5 w-5" />
+							Complete — Use Original
 						</button>
 					{/if}
 
