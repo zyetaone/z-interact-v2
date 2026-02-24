@@ -6,6 +6,8 @@
 	import CommandBar from '$lib/components/CommandBar.svelte';
 	import BottomSheet from '$lib/components/BottomSheet.svelte';
 	import { maskCanvas } from '$lib/actions/mask-canvas.svelte';
+	import { fade, scale } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import {
 		PanelRightClose,
 		PanelRightOpen,
@@ -17,14 +19,19 @@
 		Sparkles,
 		ArrowLeft,
 		Box,
-		ExternalLink
+		ExternalLink,
+		Check,
+		Globe,
+		Hammer
 	} from '@lucide/svelte';
 	import { generateMaskFromShapes } from '$lib/utils/mask';
 	import { segmentObject } from '../ai.remote';
 
 	let { data } = $props();
 
-	let workspace = $state(new ForgeWorkspace({ space: data.space, history: data.history }));
+	let workspace = $state(
+		new ForgeWorkspace({ space: data.space, history: data.history, allSpaces: data.allSpaces })
+	);
 	let editor = $state(new Editor());
 	let commandBarRef: ReturnType<typeof CommandBar> | undefined = $state();
 	let errorTimer: ReturnType<typeof setTimeout> | undefined;
@@ -510,7 +517,16 @@
 						</div>
 
 						<!-- Complete & Build 3D button -->
-						{#if workspace.versions.length > 0}
+						{#if workspace.isProcessing && workspace.versions.length > 0}
+							<div
+								class="flex items-center justify-center gap-3 rounded-lg bg-purple-600/50 px-4 py-3"
+							>
+								<div
+									class="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white"
+								></div>
+								<span class="text-sm font-medium text-white/80">Building 3D model...</span>
+							</div>
+						{:else if workspace.versions.length > 0}
 							<button
 								onclick={() => workspace.complete()}
 								disabled={workspace.isProcessing || workspace.hasReachedLimit}
@@ -519,6 +535,13 @@
 								<Box class="h-5 w-5" />
 								Complete & Build 3D
 							</button>
+						{:else if workspace.isProcessing}
+							<div class="flex items-center justify-center gap-3 rounded-lg bg-white/5 px-4 py-3">
+								<div
+									class="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white"
+								></div>
+								<span class="text-sm font-medium text-white/80">Building 3D model...</span>
+							</div>
 						{:else}
 							<button
 								onclick={() => workspace.complete()}
@@ -625,7 +648,16 @@
 					</div>
 
 					<!-- Complete button (mobile) -->
-					{#if workspace.versions.length > 0}
+					{#if workspace.isProcessing && workspace.versions.length > 0}
+						<div
+							class="flex items-center justify-center gap-3 rounded-lg bg-purple-600/50 px-4 py-3"
+						>
+							<div
+								class="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white"
+							></div>
+							<span class="text-sm font-medium text-white/80">Building 3D model...</span>
+						</div>
+					{:else if workspace.versions.length > 0}
 						<button
 							onclick={() => workspace.complete()}
 							disabled={workspace.isProcessing}
@@ -634,6 +666,13 @@
 							<Box class="h-5 w-5" />
 							Complete & Build 3D
 						</button>
+					{:else if workspace.isProcessing}
+						<div class="flex items-center justify-center gap-3 rounded-lg bg-white/5 px-4 py-3">
+							<div
+								class="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white"
+							></div>
+							<span class="text-sm font-medium text-white/80">Building 3D model...</span>
+						</div>
 					{:else}
 						<button
 							onclick={() => workspace.complete()}
@@ -670,6 +709,90 @@
 				</div>
 			{/snippet}
 		</BottomSheet>
+	{/if}
+
+	<!-- Space Forged Modal -->
+	{#if workspace.showCompletionModal}
+		<div
+			class="fixed inset-0 z-[100] flex items-center justify-center"
+			transition:fade={{ duration: 300 }}
+		>
+			<div class="absolute inset-0 bg-black/90 backdrop-blur-xl"></div>
+			<div
+				class="relative z-10 flex max-w-lg flex-col items-center px-6 text-center"
+				in:scale={{ duration: 500, start: 0.9, easing: cubicOut }}
+			>
+				<!-- Checkmark -->
+				<div
+					class="mb-6 flex h-20 w-20 items-center justify-center rounded-full border-2 border-emerald-400/50 bg-emerald-500/20"
+				>
+					<Check class="h-10 w-10 text-emerald-400" />
+				</div>
+
+				<!-- Title -->
+				<h2 class="mb-2 text-3xl font-bold text-white" in:fade={{ delay: 300, duration: 400 }}>
+					Space Forged
+				</h2>
+
+				<!-- Space image -->
+				<div
+					class="mb-6 overflow-hidden rounded-xl border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.2)]"
+					in:fade={{ delay: 500, duration: 400 }}
+				>
+					<img
+						src={workspace.currentImageUrl}
+						alt={workspace.spaceName}
+						class="h-48 w-72 object-cover"
+					/>
+				</div>
+
+				<!-- Progress dots -->
+				{#if workspace.allSpaces.length > 0}
+					<div class="mb-2 flex items-center gap-2" in:fade={{ delay: 700, duration: 400 }}>
+						{#each workspace.allSpaces as sp (sp.id)}
+							<div
+								class="h-3 w-3 rounded-full transition-all duration-300 {sp.status === 'complete'
+									? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]'
+									: 'bg-white/20'}"
+							></div>
+						{/each}
+					</div>
+					<p class="mb-8 text-sm text-slate-400" in:fade={{ delay: 700, duration: 400 }}>
+						{workspace.completedCount} of {workspace.totalSpaces} islands built
+					</p>
+				{/if}
+
+				<!-- CTA -->
+				{#if workspace.allComplete}
+					<a
+						href="/world"
+						class="pulse-glow inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-emerald-500"
+						in:fade={{ delay: 900, duration: 400 }}
+					>
+						<Globe class="h-5 w-5" />
+						Enter Your World
+					</a>
+				{:else if workspace.nextSpaceId}
+					<a
+						href="/forge/{workspace.nextSpaceId}"
+						class="pulse-glow inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-purple-500"
+						in:fade={{ delay: 900, duration: 400 }}
+					>
+						<Hammer class="h-5 w-5" />
+						Forge Next
+					</a>
+				{:else}
+					<a
+						href="/world"
+						class="pulse-glow inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-emerald-500"
+						in:fade={{ delay: 900, duration: 400 }}
+					>
+						<Globe class="h-5 w-5" />
+						Enter Your World
+					</a>
+				{/if}
+			</div>
+		</div>
 	{/if}
 
 	<!-- Error toast -->

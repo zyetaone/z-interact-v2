@@ -5,9 +5,17 @@ import { editImage, deleteImage, completeSpace } from './ai.remote';
 
 const MAX_EDITS = 20;
 
+interface SpaceSummary {
+	id: string;
+	name: string;
+	status: string;
+	sortOrder: number;
+}
+
 interface ForgeInit {
 	space: Space;
 	history: Version[];
+	allSpaces?: SpaceSummary[];
 }
 
 export class ForgeWorkspace {
@@ -23,8 +31,28 @@ export class ForgeWorkspace {
 	compareId = $state<string | null>(null);
 	isComparing = $state(false);
 	glbUrl = $state<string | null>(null);
+	allSpaces = $state<SpaceSummary[]>([]);
+	showCompletionModal = $state(false);
 
 	readonly tree: TreeNode[] = $derived(buildTree(this.versions));
+
+	readonly completedCount: number = $derived(
+		this.allSpaces.filter((s) => s.status === 'complete').length
+	);
+
+	readonly totalSpaces: number = $derived(this.allSpaces.length);
+
+	readonly nextSpaceId: string | null = $derived.by(() => {
+		const sorted = [...this.allSpaces].sort((a, b) => a.sortOrder - b.sortOrder);
+		const incomplete = sorted.find((s) => s.status !== 'complete' && s.id !== this.spaceId);
+		return incomplete?.id ?? null;
+	});
+
+	readonly allComplete: boolean = $derived(
+		this.allSpaces.length > 0 &&
+			this.allSpaces.every((s) => s.status === 'complete' || s.id === this.spaceId) &&
+			this.status === 'complete'
+	);
 
 	readonly activeVersion: Version | undefined = $derived(
 		this.versions.find((v) => v.id === this.activeId)
@@ -51,6 +79,7 @@ export class ForgeWorkspace {
 		this.status = init.space.status === 'complete' ? 'complete' : 'forging';
 		this.glbUrl = init.space.glbUrl;
 		this.versions = init.history;
+		this.allSpaces = init.allSpaces ?? [];
 	}
 
 	async generate(
@@ -131,6 +160,11 @@ export class ForgeWorkspace {
 			const result = await completeSpace({ spaceId: this.spaceId });
 			this.status = 'complete';
 			this.glbUrl = result.space?.glbUrl ?? null;
+			// Update this space's status in allSpaces
+			this.allSpaces = this.allSpaces.map((s) =>
+				s.id === this.spaceId ? { ...s, status: 'complete' } : s
+			);
+			this.showCompletionModal = true;
 		} catch (e) {
 			this.errorMessage = e instanceof Error ? e.message : '3D generation failed';
 		} finally {
