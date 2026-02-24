@@ -9,7 +9,10 @@ import type { RequestHandler } from './$types';
  * Generates a video clip from an image URL.
  * Body: { imageUrl: string, index?: number }
  */
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, cookies }) => {
+	const sessionId = cookies.get('session_id');
+	if (!sessionId) return new Response('Unauthorized', { status: 401 });
+
 	let body: unknown;
 	try {
 		body = await request.json();

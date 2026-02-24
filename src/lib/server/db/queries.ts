@@ -129,33 +129,15 @@ export async function addEditNode(
 ) {
 	const d = db();
 	const nodeId = crypto.randomUUID();
-	const now = new Date().toISOString();
 
-	const space = await d
-		.update(spaces)
-		.set({
-			currentImageUrl: newImageUrl,
-			editCount: sql`${spaces.editCount} + 1`,
-			status: 'forging',
-			activeNodeId: nodeId,
-			updatedAt: now
-		})
-		.where(and(eq(spaces.id, spaceId), lt(spaces.editCount, MAX_EDITS_PER_SPACE)))
-		.returning()
-		.get();
-
-	if (!space) {
-		const existing = await d.query.spaces.findFirst({ where: eq(spaces.id, spaceId) });
-		if (!existing) throw new Error(`Space not found: ${spaceId}`);
-		throw new Error(`Edit limit reached (${MAX_EDITS_PER_SPACE} max)`);
-	}
-
+	// 1. Insert edit node first (orphaned nodes are harmless; a space pointing to
+	//    a non-existent node is not). Step is set to 0 temporarily.
 	const node = await d
 		.insert(editHistory)
 		.values({
 			id: nodeId,
 			spaceId,
-			step: space.editCount,
+			step: 0,
 			parentId: parentNodeId,
 			imageUrl: newImageUrl,
 			prompt
@@ -163,7 +145,54 @@ export async function addEditNode(
 		.returning()
 		.get();
 
-	return { space, node };
+	// 2. Try to update the space — the WHERE guard enforces the edit limit atomically.
+	try {
+		const space = await d
+			.update(spaces)
+			.set({
+				currentImageUrl: newImageUrl,
+				editCount: sql`${spaces.editCount} + 1`,
+				status: 'forging',
+				activeNodeId: nodeId,
+				updatedAt: new Date().toISOString()
+			})
+			.where(and(eq(spaces.id, spaceId), lt(spaces.editCount, MAX_EDITS_PER_SPACE)))
+			.returning()
+			.get();
+
+		if (!space) {
+			// Rollback: delete the orphaned node
+			await d.delete(editHistory).where(eq(editHistory.id, nodeId)).run();
+			// Check why it failed
+			const existing = await d.query.spaces.findFirst({ where: eq(spaces.id, spaceId) });
+			if (!existing) throw new Error(`Space not found: ${spaceId}`);
+			throw new Error(`Edit limit reached (${MAX_EDITS_PER_SPACE} max)`);
+		}
+
+		// 3. Now set the correct step on the node (matches the incremented editCount).
+		const [updatedNode] = await d
+			.update(editHistory)
+			.set({ step: space.editCount })
+			.where(eq(editHistory.id, nodeId))
+			.returning();
+
+		return { space, node: updatedNode ?? node };
+	} catch (e) {
+		// If it's our own thrown error, rethrow as-is
+		if (
+			e instanceof Error &&
+			(e.message.includes('Edit limit') || e.message.includes('Space not found'))
+		) {
+			throw e;
+		}
+		// Rollback orphaned node on unexpected error
+		await d
+			.delete(editHistory)
+			.where(eq(editHistory.id, nodeId))
+			.run()
+			.catch(() => {});
+		throw e;
+	}
 }
 
 export function getEditHistory(spaceId: string) {
@@ -178,6 +207,7 @@ export function getEditHistory(spaceId: string) {
 export async function deleteEditNode(spaceId: string, nodeId: string) {
 	const d = db();
 
+	// 1. Validate preconditions (parallel reads)
 	const [children, node, sp] = await Promise.all([
 		d.select().from(editHistory).where(eq(editHistory.parentId, nodeId)).all(),
 		d.select().from(editHistory).where(eq(editHistory.id, nodeId)).get(),
@@ -200,17 +230,39 @@ export async function deleteEditNode(spaceId: string, nodeId: string) {
 		if (activeNode) newImageUrl = activeNode.imageUrl;
 	}
 
+	// 2. Delete the node first (a missing history node is less harmful than a
+	//    space pointing to a non-existent node)
 	await d.delete(editHistory).where(eq(editHistory.id, nodeId)).run();
 
-	return d
-		.update(spaces)
-		.set({
-			activeNodeId: newActiveNodeId,
-			currentImageUrl: newImageUrl,
-			editCount: sql`MAX(${spaces.editCount} - 1, 0)`,
-			updatedAt: new Date().toISOString()
-		})
-		.where(eq(spaces.id, spaceId))
-		.returning()
-		.get();
+	// 3. Update the space — if this fails, re-insert the deleted node to restore consistency
+	try {
+		const space = await d
+			.update(spaces)
+			.set({
+				activeNodeId: newActiveNodeId,
+				currentImageUrl: newImageUrl,
+				editCount: sql`MAX(${spaces.editCount} - 1, 0)`,
+				updatedAt: new Date().toISOString()
+			})
+			.where(eq(spaces.id, spaceId))
+			.returning()
+			.get();
+
+		return space;
+	} catch (e) {
+		// Rollback: re-insert the deleted node
+		await d
+			.insert(editHistory)
+			.values({
+				id: node.id,
+				spaceId: node.spaceId,
+				step: node.step,
+				parentId: node.parentId,
+				imageUrl: node.imageUrl,
+				prompt: node.prompt
+			})
+			.run()
+			.catch(() => {});
+		throw e;
+	}
 }

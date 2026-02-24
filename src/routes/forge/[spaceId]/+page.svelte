@@ -519,6 +519,15 @@
 								<Box class="h-5 w-5" />
 								Complete & Build 3D
 							</button>
+						{:else}
+							<button
+								onclick={() => workspace.complete()}
+								disabled={workspace.isProcessing}
+								class="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
+							>
+								<Box class="h-5 w-5" />
+								Skip Editing — Use As-Is
+							</button>
 						{/if}
 
 						<!-- Version history -->
@@ -624,6 +633,15 @@
 						>
 							<Box class="h-5 w-5" />
 							Complete & Build 3D
+						</button>
+					{:else}
+						<button
+							onclick={() => workspace.complete()}
+							disabled={workspace.isProcessing}
+							class="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
+						>
+							<Box class="h-5 w-5" />
+							Skip Editing — Use As-Is
 						</button>
 					{/if}
 

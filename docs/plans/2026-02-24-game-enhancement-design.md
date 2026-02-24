@@ -6,10 +6,12 @@
 ## Overview
 
 Two-phase plan:
+
 - **Phase 0**: Extract editor/AI/3D/video into shared packages, create standalone editor app, convert to monorepo
 - **Phase 1**: Enhance the game (personality engine, cinematic modals, seed content, polish)
 
 ## Design Principles
+
 - Deterministic — no real-time infra, no polling, no WebSockets
 - In control — works the same for 1 or 50 users
 - Punchy — phase transitions are moments, not page loads
@@ -93,20 +95,20 @@ The AI layer currently reads credentials from `getRequestEvent()` (SvelteKit-spe
 ```typescript
 // packages/ai/src/editor.ts — BEFORE (SvelteKit-coupled)
 export function createFalEditor(): ImageEditor {
-  configureFal();  // reads from getRequestEvent()
-  // ...
+	configureFal(); // reads from getRequestEvent()
+	// ...
 }
 
 // packages/ai/src/editor.ts — AFTER (pure, injectable)
 export interface FalConfig {
-  apiKey: string;
-  accountId?: string;
-  gatewayId?: string;
+	apiKey: string;
+	accountId?: string;
+	gatewayId?: string;
 }
 
 export function createImageEditor(config: FalConfig): ImageEditor {
-  fal.config({ credentials: config.apiKey, ...proxyConfig(config) });
-  // ...
+	fal.config({ credentials: config.apiKey, ...proxyConfig(config) });
+	// ...
 }
 ```
 
@@ -118,12 +120,12 @@ import { createImageEditor } from '@workspace-studio/ai';
 import { getRequestEvent } from '$app/server';
 
 export function getEditor() {
-  const env = getRequestEvent()?.platform?.env;
-  return createImageEditor({
-    apiKey: env?.FAL_API_KEY ?? process.env.FAL_API_KEY!,
-    accountId: env?.CLOUDFLARE_ACCOUNT_ID,
-    gatewayId: env?.CLOUDFLARE_AI_GATEWAY_ID
-  });
+	const env = getRequestEvent()?.platform?.env;
+	return createImageEditor({
+		apiKey: env?.FAL_API_KEY ?? process.env.FAL_API_KEY!,
+		accountId: env?.CLOUDFLARE_ACCOUNT_ID,
+		gatewayId: env?.CLOUDFLARE_AI_GATEWAY_ID
+	});
 }
 ```
 
@@ -131,23 +133,25 @@ Same pattern for storage (R2 bucket injected), DB (D1/libSQL injected), etc.
 
 ## Shared Package Boundaries
 
-| Package | Contains | Does NOT contain |
-|---------|----------|-----------------|
-| `@workspace-studio/ai` | fal.ai API calls, image resolution, storage helpers | SvelteKit imports, `getRequestEvent`, `command()` |
-| `@workspace-studio/editor-ui` | Svelte components, Editor state class, canvas actions, utils | Server code, DB queries, API routes |
-| `@workspace-studio/scene` | Threlte/Three.js scene components | Server code, data fetching |
+| Package                       | Contains                                                     | Does NOT contain                                  |
+| ----------------------------- | ------------------------------------------------------------ | ------------------------------------------------- |
+| `@workspace-studio/ai`        | fal.ai API calls, image resolution, storage helpers          | SvelteKit imports, `getRequestEvent`, `command()` |
+| `@workspace-studio/editor-ui` | Svelte components, Editor state class, canvas actions, utils | Server code, DB queries, API routes               |
+| `@workspace-studio/scene`     | Threlte/Three.js scene components                            | Server code, data fetching                        |
 
 ## Standalone Editor App (`apps/editor/`)
 
 A general-purpose AI image editor:
 
 ### Routes
-| Route | Purpose |
-|-------|---------|
-| `/` | Upload or paste an image to start editing |
+
+| Route             | Purpose                                                  |
+| ----------------- | -------------------------------------------------------- |
+| `/`               | Upload or paste an image to start editing                |
 | `/edit/[imageId]` | Full editor (same UI as forge, reuses editor-ui package) |
 
 ### Features
+
 - Upload any image (drag-drop, paste, file picker)
 - AI edit with mask tools (draw, brush, polygon, magic wand)
 - AI prompt-based editing (add, remove, modify)
@@ -158,12 +162,14 @@ A general-purpose AI image editor:
 - No sessions, no quest, no game — just an editor
 
 ### DB Schema (simpler)
+
 ```
 images: id, originalUrl, currentUrl, createdAt
 editHistory: id, imageId, parentId, imageUrl, prompt, step, createdAt
 ```
 
 ### Cloudflare Bindings
+
 Same as game app: D1 + R2 + FAL_API_KEY. Separate Wrangler config, separate D1 database.
 
 ## Migration Steps (Phase 0 Implementation Order)
@@ -183,10 +189,12 @@ Same as game app: D1 + R2 + FAL_API_KEY. Separate Wrangler config, separate D1 d
 ## 1. Quest Reduction (7 → 5 Steps)
 
 ### Drop
+
 - Step 5 (Collaboration: War Room vs Training Room) — overlaps with Meeting
 - Step 7 (Kitchen: Maker Kitchen vs Hydration Station) — least impactful category
 
 ### Keep (renumbered)
+
 1. Workstation: Open Desk vs Structured Desk
 2. Meeting: Small Huddle vs Project Room
 3. Focus: Focus Room vs Phone Booth
@@ -198,15 +206,17 @@ Same as game app: D1 + R2 + FAL_API_KEY. Separate Wrangler config, separate D1 d
 ## 2. Personality Engine
 
 ### Dimensions (5)
-| Dimension | Low end | High end |
-|-----------|---------|----------|
-| Focus | Social, open | Private, focused |
-| Energy | Minimal, quiet | Rich, active |
-| Scale | Intimate, 1:1 | Grand, group |
-| Formality | Casual, lounge | Structured, professional |
-| Craft | Quick, functional | Premium, curated |
+
+| Dimension | Low end           | High end                 |
+| --------- | ----------------- | ------------------------ |
+| Focus     | Social, open      | Private, focused         |
+| Energy    | Minimal, quiet    | Rich, active             |
+| Scale     | Intimate, 1:1     | Grand, group             |
+| Formality | Casual, lounge    | Structured, professional |
+| Craft     | Quick, functional | Premium, curated         |
 
 ### Choice → Dimension Mapping
+
 ```
 Step 1 (Workstation):
   Open Desk    → Focus -1, Energy +1, Formality -1
@@ -230,30 +240,34 @@ Step 5 (Privacy):
 ```
 
 ### Archetypes (8)
-| Archetype | Key traits | Description |
-|-----------|-----------|-------------|
-| **The Architect** | High Focus + Formality | "You build spaces that think. Every surface has purpose." |
-| **The Collaborator** | Low Focus + High Energy | "Your workspace is alive with conversation." |
-| **The Minimalist** | High Focus + Low Energy | "Less is more. Silence is your greatest tool." |
-| **The Curator** | High Craft + Formality | "Details matter. Every object is chosen." |
-| **The Connector** | Low Focus + Low Formality | "Barriers? What barriers?" |
-| **The Strategist** | High Focus + Scale | "Command rooms and war tables." |
-| **The Creator** | High Craft + Energy | "Your workspace is a studio." |
-| **The Explorer** | Balanced | "You defy categories." |
+
+| Archetype            | Key traits                | Description                                               |
+| -------------------- | ------------------------- | --------------------------------------------------------- |
+| **The Architect**    | High Focus + Formality    | "You build spaces that think. Every surface has purpose." |
+| **The Collaborator** | Low Focus + High Energy   | "Your workspace is alive with conversation."              |
+| **The Minimalist**   | High Focus + Low Energy   | "Less is more. Silence is your greatest tool."            |
+| **The Curator**      | High Craft + Formality    | "Details matter. Every object is chosen."                 |
+| **The Connector**    | Low Focus + Low Formality | "Barriers? What barriers?"                                |
+| **The Strategist**   | High Focus + Scale        | "Command rooms and war tables."                           |
+| **The Creator**      | High Craft + Energy       | "Your workspace is a studio."                             |
+| **The Explorer**     | Balanced                  | "You defy categories."                                    |
 
 ### Algorithm
+
 1. Sum dimension scores from all 5 choices
 2. Find top 2 dimensions (highest absolute values)
 3. Match against archetype table (best fit)
 4. Fallback: "The Explorer" if no strong signal
 
 ### Storage
+
 - Add `archetype` TEXT column to `sessions` table
 - Computed server-side in `saveQuest`, stored once
 
 ## 3. Cinematic Modals
 
 ### Shared Component: `CinematicModal.svelte`
+
 - Full-screen overlay: black/90 + backdrop-blur-xl
 - Content centered, max-w-lg
 - Entry: fade (300ms) + scale (0.9→1.0, 500ms)
@@ -262,7 +276,9 @@ Step 5 (Privacy):
 - Body scroll locked
 
 ### Modal 1: Personality Reveal
+
 **Trigger**: After quest step 5, before results grid.
+
 1. Archetype icon — scale in (400ms)
 2. "You are..." — fade in
 3. Name — typewriter (40ms/char)
@@ -271,7 +287,9 @@ Step 5 (Privacy):
 6. "Enter the Forge" — pulse-glow
 
 ### Modal 2: Space Forged
+
 **Trigger**: After `completeSpace` succeeds.
+
 1. Checkmark SVG draw-in (500ms)
 2. "Space Forged" headline
 3. Space image + emerald glow
@@ -279,13 +297,16 @@ Step 5 (Privacy):
 5. CTA: "Forge Next" or "Enter Your World"
 
 ### Modal 3: World Unlocked
+
 **Trigger**: First `/world` load with all spaces complete (localStorage flag).
+
 1. Black (500ms)
 2. Island count scales in
 3. "Your World Is Complete"
 4. Fades away, scene visible
 
 ## 4. Seed Content
+
 - `/api/seed` POST (secret-key protected)
 - 5-8 demo spaces from unused static assets
 - `isSeed: true` flag on sessions table
@@ -294,23 +315,28 @@ Step 5 (Privacy):
 ## 5. Game Feel Polish
 
 ### Quest
+
 - Blur-in on new step images (200ms)
 - Progress bar gradient shimmer
 - Step counter animation
 
 ### Forge
+
 - Entry transition: dark overlay → space name → "Preparing canvas..." → reveal
 - Completion: button morphs to progress → Space Forged modal
 
 ### World
+
 - New islands (last 5 min) get sparkle effect
 - Camera starts zoomed in, slowly reveals all
 
 ## Data Model Changes
+
 - `sessions`: Add `archetype TEXT`, `isSeed INTEGER DEFAULT 0`
 - No other table changes
 
 ## What We're NOT Doing
+
 - No real-time polling or WebSockets
 - No presenter dashboard
 - No leaderboard or voting

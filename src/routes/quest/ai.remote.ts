@@ -1,9 +1,14 @@
 import * as v from 'valibot';
-import { command } from '$app/server';
-import { saveQuestChoice, createSpace, updateSession, getSession } from '$lib/server/db/queries';
+import { command, getRequestEvent } from '$app/server';
+import {
+	saveQuestChoice,
+	createSpace,
+	updateSession,
+	getSession,
+	getSessionSpaces
+} from '$lib/server/db/queries';
 
 const SaveQuestSchema = v.object({
-	sessionId: v.pipe(v.string(), v.nonEmpty()),
 	choices: v.array(
 		v.object({
 			step: v.number(),
@@ -17,9 +22,18 @@ const SaveQuestSchema = v.object({
 	)
 });
 
-export const saveQuest = command(SaveQuestSchema, async ({ sessionId, choices }) => {
+export const saveQuest = command(SaveQuestSchema, async ({ choices }) => {
+	const event = getRequestEvent();
+	const sessionId = event?.cookies.get('session_id');
+	if (!sessionId) throw new Error('Unauthorized');
+
 	const session = await getSession(sessionId);
 	if (!session) throw new Error('Session not found');
+
+	if (session.questCompleted) {
+		const existingSpaces = await getSessionSpaces(sessionId);
+		return { spaceIds: existingSpaces.map((s) => s.id) };
+	}
 
 	const spaceIds: string[] = [];
 

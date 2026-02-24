@@ -79,6 +79,12 @@ export class Editor {
 		this.tempRect = null;
 	}
 
+	updateRect(idx: number, updates: Partial<{ x: number; y: number; w: number; h: number }>) {
+		const r = this.rects[idx];
+		if (!r) return;
+		this.rects[idx] = { ...r, ...updates };
+	}
+
 	deleteRect(id: number) {
 		this.rects = this.rects.filter((r) => r.id !== id);
 	}

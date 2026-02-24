@@ -1,13 +1,47 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { browser } from '$app/environment';
 	import { QuestEngine } from '$lib/quest-engine.svelte';
 	import { QUEST_STEPS } from '$lib/config/quest';
 	import { Sparkles, ArrowRight, ChevronRight } from '@lucide/svelte';
 	import { saveQuest } from './ai.remote';
 	import { fly, scale } from 'svelte/transition';
 
-	let { data } = $props();
+	const QUEST_STORAGE_KEY = 'quest-choices';
+
 	const engine = new QuestEngine();
+
+	// Restore saved choices synchronously before first render (browser-only)
+	if (browser) {
+		try {
+			const saved = sessionStorage.getItem(QUEST_STORAGE_KEY);
+			if (saved) {
+				const parsed: ('a' | 'b')[] = JSON.parse(saved);
+				if (Array.isArray(parsed)) {
+					for (const choice of parsed) {
+						if (choice === 'a' || choice === 'b') {
+							engine.choose(choice);
+						}
+					}
+				}
+			}
+		} catch {
+			// Ignore parse errors — start fresh
+		}
+	}
+
+	// Persist choices to sessionStorage whenever they change
+	$effect(() => {
+		const choices = engine.choices;
+		if (!browser) return;
+		try {
+			if (choices.length > 0) {
+				sessionStorage.setItem(QUEST_STORAGE_KEY, JSON.stringify(choices));
+			}
+		} catch {
+			// Ignore storage errors
+		}
+	});
 
 	let chosen = $state<'a' | 'b' | null>(null);
 	let saving = $state(false);
@@ -38,9 +72,15 @@
 			});
 
 			const { spaceIds } = await saveQuest({
-				sessionId: data.sessionId,
 				choices
 			});
+
+			// Clear sessionStorage on successful save
+			try {
+				sessionStorage.removeItem(QUEST_STORAGE_KEY);
+			} catch {
+				// Ignore
+			}
 
 			if (spaceIds.length > 0) {
 				goto(`/forge/${spaceIds[0]}`);

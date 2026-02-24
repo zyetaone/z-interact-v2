@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { command } from '$app/server';
+import { command, getRequestEvent } from '$app/server';
 import {
 	createImageEditor,
 	createImageSegmenter,
@@ -33,10 +33,21 @@ const safePrompt = v.pipe(
 	)
 );
 
+const safeMaskUrl = v.optional(
+	v.union([
+		safeImageUrl,
+		v.pipe(
+			v.string(),
+			v.check((s) => s.startsWith('data:image/'), 'Must be image data URI'),
+			v.maxLength(5 * 1024 * 1024)
+		)
+	])
+);
+
 const EditImageSchema = v.object({
 	spaceId: v.pipe(v.string(), v.nonEmpty()),
 	prompt: safePrompt,
-	maskUrl: v.optional(v.string()),
+	maskUrl: safeMaskUrl,
 	assetUrl: v.optional(safeImageUrl),
 	tool: v.optional(v.picklist(['draw', 'brush', 'magic', 'poly'])),
 	mode: v.optional(v.picklist(['add', 'subtract', 'modify'])),
@@ -44,8 +55,13 @@ const EditImageSchema = v.object({
 });
 
 export const editImage = command(EditImageSchema, async (data) => {
+	const event = getRequestEvent();
+	const sessionId = event?.cookies.get('session_id');
+	if (!sessionId) throw new Error('Unauthorized');
+
 	const space = await getSpace(data.spaceId);
 	if (!space) throw new Error('Space not found');
+	if (space.sessionId !== sessionId) throw new Error('Forbidden');
 
 	const editor = createImageEditor();
 	const result = await editor.edit({
@@ -99,6 +115,14 @@ const DeleteImageSchema = v.object({
 });
 
 export const deleteImage = command(DeleteImageSchema, async (data) => {
+	const event = getRequestEvent();
+	const sessionId = event?.cookies.get('session_id');
+	if (!sessionId) throw new Error('Unauthorized');
+
+	const space = await getSpace(data.spaceId);
+	if (!space) throw new Error('Space not found');
+	if (space.sessionId !== sessionId) throw new Error('Forbidden');
+
 	const updatedSpace = await deleteEditNode(data.spaceId, data.nodeId);
 	return { space: updatedSpace };
 });
@@ -108,8 +132,17 @@ const CompleteSpaceSchema = v.object({
 });
 
 export const completeSpace = command(CompleteSpaceSchema, async (data) => {
+	const event = getRequestEvent();
+	const sessionId = event?.cookies.get('session_id');
+	if (!sessionId) throw new Error('Unauthorized');
+
 	const space = await getSpace(data.spaceId);
 	if (!space) throw new Error('Space not found');
+	if (space.sessionId !== sessionId) throw new Error('Forbidden');
+
+	if (space.status === 'complete' && space.glbUrl) {
+		return { space };
+	}
 
 	const falUrl = await resolveImageForFal(space.currentImageUrl);
 	const { glbUrl } = await generateGlb({ imageUrl: falUrl });

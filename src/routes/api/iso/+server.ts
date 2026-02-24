@@ -12,7 +12,10 @@ import type { RequestHandler } from './$types';
  * persists the GLB to R2, and updates the space record.
  * Body: { spaceId: string }
  */
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, cookies }) => {
+	const sessionId = cookies.get('session_id');
+	if (!sessionId) return new Response('Unauthorized', { status: 401 });
+
 	let body: unknown;
 	try {
 		body = await request.json();
@@ -30,6 +33,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	if (!space) {
 		error(404, `Space not found: ${spaceId}`);
 	}
+	if (space.sessionId !== sessionId) return new Response('Forbidden', { status: 403 });
 	if (space.glbUrl) {
 		return json({ glbUrl: space.glbUrl, cached: true });
 	}

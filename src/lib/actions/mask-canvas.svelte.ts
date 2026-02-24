@@ -328,7 +328,7 @@ export function maskCanvas(node: HTMLCanvasElement, getParams: () => Params) {
 				const r = p.editor.rects[idx];
 				const newX = Math.max(frame.x, Math.min(frame.x + frame.width - r.w, x - dragOffset.x));
 				const newY = Math.max(frame.y, Math.min(frame.y + frame.height - r.h, y - dragOffset.y));
-				p.editor.rects[idx] = { ...r, x: newX, y: newY };
+				p.editor.updateRect(idx, { x: newX, y: newY });
 			}
 			return;
 		}

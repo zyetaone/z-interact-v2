@@ -15,6 +15,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		cookies.set('session_id', sessionId, {
 			path: '/',
 			httpOnly: true,
+			secure: true,
+			sameSite: 'lax' as const,
 			maxAge: 60 * 60 * 24 * 30
 		});
 	}
