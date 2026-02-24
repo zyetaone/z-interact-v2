@@ -47,6 +47,7 @@
 
 	let chosen = $state<'a' | 'b' | null>(null);
 	let saving = $state(false);
+	let saveError = $state('');
 	let showReveal = $state(false);
 	let revealArchetype = $state<Archetype | null>(null);
 
@@ -102,7 +103,8 @@
 			} else {
 				goto('/');
 			}
-		} catch {
+		} catch (e) {
+			saveError = e instanceof Error ? e.message : 'Failed to save quest. Please try again.';
 			saving = false;
 		}
 	}
@@ -253,6 +255,11 @@
 			</div>
 
 			<!-- CTA -->
+			{#if saveError}
+				<div class="mb-3 rounded-lg bg-rose-500/10 px-4 py-2 text-sm text-rose-300">
+					{saveError}
+				</div>
+			{/if}
 			<button
 				onclick={finish}
 				disabled={saving}
@@ -318,11 +325,22 @@
 
 		<!-- CTA -->
 		<button
-			onclick={() => (showReveal = false)}
-			class="reveal-cta pulse-glow inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-purple-500"
+			onclick={() => {
+				showReveal = false;
+				finish();
+			}}
+			disabled={saving}
+			class="reveal-cta pulse-glow inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-purple-500 disabled:opacity-50"
 		>
-			Enter the Forge
-			<ArrowRight class="h-5 w-5" />
+			{#if saving}
+				<div
+					class="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
+				></div>
+				Saving...
+			{:else}
+				Enter the Forge
+				<ArrowRight class="h-5 w-5" />
+			{/if}
 		</button>
 	{/if}
 </CinematicModal>

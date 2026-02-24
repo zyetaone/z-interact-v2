@@ -516,14 +516,14 @@
 						</div>
 
 						<!-- Complete Space button -->
-						{#if workspace.isProcessing && workspace.versions.length > 0}
+						{#if workspace.isCompleting}
 							<div
 								class="flex items-center justify-center gap-3 rounded-lg bg-purple-600/50 px-4 py-3"
 							>
 								<div
 									class="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white"
 								></div>
-								<span class="text-sm font-medium text-white/80">Generating 3D model...</span>
+								<span class="text-sm font-medium text-white/80">Building your island...</span>
 							</div>
 						{:else if workspace.versions.length > 0}
 							<button
@@ -539,7 +539,7 @@
 								<div
 									class="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white"
 								></div>
-								<span class="text-sm font-medium text-white/80">Generating 3D model...</span>
+								<span class="text-sm font-medium text-white/80">Creating first edit...</span>
 							</div>
 						{:else}
 							<button
@@ -604,8 +604,7 @@
 						{#if workspace.hasReachedLimit}
 							<div class="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
 								<p class="text-xs font-medium text-amber-300">
-									Edit limit reached (20 max). Edit limit reached (20 max). Complete your space to
-									continue.
+									Edit limit reached (20 edits max). Complete your space to continue.
 								</p>
 							</div>
 						{/if}

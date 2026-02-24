@@ -28,6 +28,7 @@ export class ForgeWorkspace {
 	spaceId = $state('');
 	spaceName = $state('');
 	isProcessing = $state(false);
+	isCompleting = $state(false);
 	errorMessage = $state('');
 	compareId = $state<string | null>(null);
 	isComparing = $state(false);
@@ -154,6 +155,7 @@ export class ForgeWorkspace {
 	async complete() {
 		if (this.isProcessing || this.status === 'complete') return;
 		this.isProcessing = true;
+		this.isCompleting = true;
 		this.errorMessage = '';
 
 		try {
@@ -169,6 +171,7 @@ export class ForgeWorkspace {
 			this.errorMessage = e instanceof Error ? e.message : 'Failed to complete space';
 		} finally {
 			this.isProcessing = false;
+			this.isCompleting = false;
 		}
 	}
 
