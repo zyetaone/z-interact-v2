@@ -37,8 +37,11 @@
 	// Mutable ordered models for drag-and-drop
 	let orderedModels = $state<IslandModel[]>([...data.models]);
 
-	// Drag state
-	let dragIndex = $state<number | null>(null);
+	// Track pending separately so we can reactively remove completed spaces
+	let pendingSpaces = $state([...data.pending]);
+
+	// Drag state (pointer-based for mobile support)
+	let draggedIdx = $state<number | null>(null);
 	let dragOverIndex = $state<number | null>(null);
 
 	// Check on mount if we should show the world-unlocked reveal
@@ -99,34 +102,34 @@
 
 	// --- Drag & Drop ---
 	function handleDragStart(index: number) {
-		dragIndex = index;
+		draggedIdx = index;
 	}
 
 	function handleDragOver(e: DragEvent, index: number) {
 		e.preventDefault();
-		if (dragIndex === null || dragIndex === index) return;
+		if (draggedIdx === null || draggedIdx === index) return;
 		dragOverIndex = index;
 	}
 
 	function handleDrop(index: number) {
-		if (dragIndex === null || dragIndex === index) {
-			dragIndex = null;
+		if (draggedIdx === null || draggedIdx === index) {
+			draggedIdx = null;
 			dragOverIndex = null;
 			return;
 		}
 
-		// Reorder: move item from dragIndex to index
-		const moved = orderedModels[dragIndex];
-		const updated = orderedModels.filter((_, i) => i !== dragIndex);
+		// Reorder: move item from draggedIdx to index
+		const moved = orderedModels[draggedIdx];
+		const updated = orderedModels.filter((_, i) => i !== draggedIdx);
 		updated.splice(index, 0, moved);
 		orderedModels = updated;
 
-		dragIndex = null;
+		draggedIdx = null;
 		dragOverIndex = null;
 	}
 
 	function handleDragEnd() {
-		dragIndex = null;
+		draggedIdx = null;
 		dragOverIndex = null;
 	}
 
@@ -156,6 +159,12 @@
 	// Derived: total hex slots including pending
 	const totalSlots = $derived(data.totalSpaces);
 </script>
+
+<svelte:window
+	onkeydown={(e) => {
+		if (e.key === 'Escape' && showWorldModal) dismissWorldModal();
+	}}
+/>
 
 <svelte:head>
 	<title>Your World — Workspace Studio</title>
@@ -229,9 +238,17 @@
 						Complete your quest and forge spaces to populate your floating island world.
 					</p>
 					{#if data.pending.length > 0}
-						<p class="mb-4 text-xs text-slate-500">
-							{data.pending.length} space{data.pending.length !== 1 ? 's' : ''} still in progress
-						</p>
+						<div class="mb-4 space-y-1.5">
+							{#each data.pending as ws (ws.id)}
+								<a
+									href="{base}/forge/{ws.id}"
+									class="flex items-center gap-2 rounded-lg bg-white/5 p-2 hover:bg-white/10"
+								>
+									<img src={ws.imageUrl} alt={ws.name} class="h-8 w-8 rounded object-cover" />
+									<span class="text-xs text-slate-300">{ws.name}</span>
+								</a>
+							{/each}
+						</div>
 					{/if}
 					<a
 						href="{base}/"
@@ -244,6 +261,13 @@
 			</div>
 		{/if}
 	</div>
+
+	<!-- Identity Label -->
+	{#if orderedModels.length > 0}
+		<div class="absolute top-16 left-1/2 z-20 -translate-x-1/2">
+			<div class="glass rounded-full px-5 py-2 text-sm font-medium text-white/90">Your World</div>
+		</div>
+	{/if}
 
 	<!-- Top Navigation -->
 	<nav
@@ -388,7 +412,7 @@
 							class="flex items-center justify-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/10 py-2 text-center text-xs font-medium text-purple-300 transition-colors hover:bg-purple-500/20"
 						>
 							<Hammer class="h-3.5 w-3.5" />
-							Open in Forge
+							View Space
 						</a>
 					</div>
 				</div>
@@ -499,7 +523,7 @@
 							<div
 								class="hex-shape overflow-hidden transition-all duration-200 {dragOverIndex === i
 									? 'scale-110 ring-2 ring-purple-400'
-									: ''} {dragIndex === i ? 'opacity-40' : ''}"
+									: ''} {draggedIdx === i ? 'opacity-40' : ''}"
 							>
 								<img
 									src={model.imageUrl}

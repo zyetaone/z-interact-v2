@@ -68,6 +68,16 @@
 		{/if}
 	</div>
 
+	<!-- Identity Label -->
+	{#if data.models.length > 0}
+		<div class="absolute top-16 left-1/2 z-20 -translate-x-1/2">
+			<div class="glass rounded-full px-5 py-2 text-sm font-medium text-white/90">
+				The Metaverse — {data.models.length} island{data.models.length !== 1 ? 's' : ''} from {data.participantCount}
+				participant{data.participantCount !== 1 ? 's' : ''}
+			</div>
+		</div>
+	{/if}
+
 	<!-- Top Navigation -->
 	<nav
 		class="slide-up pointer-events-none absolute top-0 right-0 left-0 z-20 flex items-center justify-between px-4 py-4 sm:px-6"
@@ -194,7 +204,7 @@
 							class="flex items-center justify-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/10 py-2 text-center text-xs font-medium text-purple-300 transition-colors hover:bg-purple-500/20"
 						>
 							<Hammer class="h-3.5 w-3.5" />
-							View in Forge
+							View Space
 						</a>
 					</div>
 				</div>
