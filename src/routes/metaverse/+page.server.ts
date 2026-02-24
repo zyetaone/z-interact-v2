@@ -9,7 +9,6 @@ export const load: PageServerLoad = async () => {
 			id: s.id,
 			name: s.name,
 			imageUrl: s.currentImageUrl,
-			glbUrl: s.glbUrl!,
 			editCount: s.editCount
 		}))
 	};

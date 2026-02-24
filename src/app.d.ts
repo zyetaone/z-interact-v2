@@ -57,12 +57,23 @@ interface R2Objects {
 	cursor?: string;
 }
 
+interface AiOptions {
+	gateway?: { id: string; skipCache?: boolean; cacheTtl?: number };
+	returnRawResponse?: boolean;
+	[key: string]: unknown;
+}
+interface Ai {
+	run(model: string, inputs: Record<string, unknown>, options?: AiOptions): Promise<unknown>;
+	gateway(gatewayId: string): unknown;
+}
+
 interface Env {
 	DB: D1Database;
 	R2_IMAGES: R2Bucket;
 	R2_PUBLIC_URL: string;
 	FAL_API_KEY: string;
 	ENVIRONMENT: string;
+	AI?: Ai;
 	CLOUDFLARE_ACCOUNT_ID?: string;
 	CLOUDFLARE_AI_GATEWAY_ID?: string;
 	CLOUDFLARE_AIG_TOKEN?: string;

@@ -18,6 +18,7 @@ export type { GlbGenerateRequest, GlbGenerateResult } from './fal-3d';
 export { generateGlb } from './fal-3d';
 
 export { resolveImageForFal } from './fal-config';
+export { getWorkersAI } from './workers-ai';
 
 export function createImageEditor(): ImageEditor {
 	return createFalEditor();

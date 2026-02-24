@@ -1,4 +1,4 @@
-import { eq, and, lt, asc, isNotNull, sql } from 'drizzle-orm';
+import { eq, and, lt, asc, sql } from 'drizzle-orm';
 import { getDb } from './index';
 import { getRequestEvent } from '$app/server';
 import { sessions, questChoices, spaces, editHistory } from './schema';
@@ -112,11 +112,18 @@ export function getCompletedSpaces(sessionId: string) {
 }
 
 export function getAllCompletedSpaces() {
-	return db()
-		.select()
-		.from(spaces)
-		.where(and(eq(spaces.status, 'complete'), isNotNull(spaces.glbUrl)))
-		.all();
+	return db().select().from(spaces).where(eq(spaces.status, 'complete')).all();
+}
+
+export async function reorderSpaces(sessionId: string, order: { id: string; sortOrder: number }[]) {
+	const d = db();
+	for (const item of order) {
+		await d
+			.update(spaces)
+			.set({ sortOrder: item.sortOrder, updatedAt: new Date().toISOString() })
+			.where(and(eq(spaces.id, item.id), eq(spaces.sessionId, sessionId)))
+			.run();
+	}
 }
 
 // --- Edit History (Forge) ---

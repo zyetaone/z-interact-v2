@@ -20,7 +20,8 @@ export const GET: RequestHandler = async ({ params, platform }) => {
 	return new Response(body, {
 		headers: {
 			'content-type': object.httpMetadata?.contentType || 'image/png',
-			'cache-control': object.httpMetadata?.cacheControl || 'public, max-age=31536000'
+			'cache-control': object.httpMetadata?.cacheControl || 'public, max-age=31536000',
+			'access-control-allow-origin': '*'
 		}
 	});
 };

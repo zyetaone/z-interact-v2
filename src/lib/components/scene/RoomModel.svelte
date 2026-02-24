@@ -23,6 +23,9 @@
 	let floatY = $state(0);
 	let glbScale = $state(1);
 	let glbOffsetY = $state(0);
+	let glbFailed = $state(false);
+
+	const showGlb = $derived(!!glbUrl && !glbFailed);
 
 	const px = $derived(position[0]);
 	const pz = $derived(position[2]);
@@ -99,14 +102,14 @@
 		<T.MeshStandardMaterial color={0x2d5016} roughness={0.8} metalness={0.1} />
 	</T.Mesh>
 
-	{#if glbUrl}
+	{#if showGlb}
 		<!-- GLB 3D model (replaces room corner) -->
 		<T.Group position={[px, glbOffsetY, pz]} scale={[glbScale, glbScale, glbScale]}>
 			<GLTF
-				url={glbUrl}
+				url={glbUrl!}
 				onload={handleGltfLoad}
 				onerror={() => {
-					/* GLB load failed — room corner fallback renders below */
+					glbFailed = true;
 				}}
 			/>
 		</T.Group>

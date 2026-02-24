@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { browser } from '$app/environment';
-	import { fade, scale } from 'svelte/transition';
+	import { fade, scale, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import IsometricScene, {
 		type IslandModel,
@@ -10,24 +10,36 @@
 	import {
 		Globe,
 		ChevronLeft,
-		Box,
 		Loader2,
 		X,
 		Gamepad2,
 		RotateCcw,
 		Keyboard,
-		Hammer
+		Hammer,
+		LayoutGrid,
+		GripVertical,
+		Check
 	} from '@lucide/svelte';
 
 	let { data } = $props();
 
 	let selectedRoom = $state<IslandModel | null>(null);
-	let isGenerating3d = $state<string | null>(null);
-	let generateError = $state('');
+	let isCompleting = $state<string | null>(null);
+	let completeError = $state('');
 	let avatarActive = $state(false);
 	let sceneControls = $state<SceneControls | null>(null);
 	let showControls = $state(true);
 	let showWorldModal = $state(false);
+	let showArrangePanel = $state(false);
+	let isSaving = $state(false);
+	let saveSuccess = $state(false);
+
+	// Mutable ordered models for drag-and-drop
+	let orderedModels = $state<IslandModel[]>([...data.models]);
+
+	// Drag state
+	let dragIndex = $state<number | null>(null);
+	let dragOverIndex = $state<number | null>(null);
 
 	// Check on mount if we should show the world-unlocked reveal
 	$effect(() => {
@@ -50,9 +62,9 @@
 		selectedRoom = room;
 	}
 
-	async function generate3d(spaceId: string) {
-		isGenerating3d = spaceId;
-		generateError = '';
+	async function completeAndAdd(spaceId: string) {
+		isCompleting = spaceId;
+		completeError = '';
 
 		try {
 			const res = await fetch('/api/iso', {
@@ -62,15 +74,15 @@
 			});
 
 			if (!res.ok) {
-				const err = await res.json().catch(() => ({ message: 'Generation failed' }));
+				const err = await res.json().catch(() => ({ message: 'Failed to complete space' }));
 				throw new Error(err.message || `HTTP ${res.status}`);
 			}
 
 			window.location.reload();
 		} catch (e) {
-			generateError = e instanceof Error ? e.message : '3D generation failed';
+			completeError = e instanceof Error ? e.message : 'Failed';
 		} finally {
-			isGenerating3d = null;
+			isCompleting = null;
 		}
 	}
 
@@ -84,6 +96,65 @@
 		sceneControls?.resetView();
 		selectedRoom = null;
 	}
+
+	// --- Drag & Drop ---
+	function handleDragStart(index: number) {
+		dragIndex = index;
+	}
+
+	function handleDragOver(e: DragEvent, index: number) {
+		e.preventDefault();
+		if (dragIndex === null || dragIndex === index) return;
+		dragOverIndex = index;
+	}
+
+	function handleDrop(index: number) {
+		if (dragIndex === null || dragIndex === index) {
+			dragIndex = null;
+			dragOverIndex = null;
+			return;
+		}
+
+		// Reorder: move item from dragIndex to index
+		const moved = orderedModels[dragIndex];
+		const updated = orderedModels.filter((_, i) => i !== dragIndex);
+		updated.splice(index, 0, moved);
+		orderedModels = updated;
+
+		dragIndex = null;
+		dragOverIndex = null;
+	}
+
+	function handleDragEnd() {
+		dragIndex = null;
+		dragOverIndex = null;
+	}
+
+	async function saveOrder() {
+		isSaving = true;
+		saveSuccess = false;
+
+		try {
+			const order = orderedModels.map((m, i) => ({ id: m.id, sortOrder: i }));
+			const res = await fetch('/api/reorder', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ order })
+			});
+
+			if (!res.ok) throw new Error('Failed to save');
+
+			saveSuccess = true;
+			setTimeout(() => (saveSuccess = false), 2000);
+		} catch {
+			completeError = 'Failed to save arrangement';
+		} finally {
+			isSaving = false;
+		}
+	}
+
+	// Derived: total hex slots including pending
+	const totalSlots = $derived(data.totalSpaces);
 </script>
 
 <svelte:head>
@@ -107,7 +178,7 @@
 					class="mb-6 flex h-24 w-24 items-center justify-center rounded-full border-2 border-purple-400/50 bg-purple-500/20"
 					in:scale={{ delay: 500, duration: 500, start: 0.5, easing: cubicOut }}
 				>
-					<span class="text-4xl font-bold text-purple-300">{data.models.length}</span>
+					<span class="text-4xl font-bold text-purple-300">{orderedModels.length}</span>
 				</div>
 
 				<!-- Title -->
@@ -119,7 +190,7 @@
 				</h1>
 
 				<p class="mb-8 max-w-md text-lg text-slate-400" in:fade={{ delay: 1000, duration: 500 }}>
-					{data.models.length} floating islands, crafted by your choices and imagination.
+					{orderedModels.length} floating islands, crafted by your choices and imagination.
 				</p>
 
 				<!-- CTA -->
@@ -137,9 +208,10 @@
 
 	<!-- Scene -->
 	<div class="absolute inset-0" in:fade={{ duration: 800, delay: showWorldModal ? 0 : 200 }}>
-		{#if data.models.length > 0}
+		{#if orderedModels.length > 0}
 			<IsometricScene
-				models={data.models}
+				models={orderedModels}
+				{totalSlots}
 				onroomselect={handleRoomSelect}
 				bind:controls={sceneControls}
 			/>
@@ -158,7 +230,7 @@
 					</p>
 					{#if data.pending.length > 0}
 						<p class="mb-4 text-xs text-slate-500">
-							{data.pending.length} space{data.pending.length !== 1 ? 's' : ''} ready for 3D generation
+							{data.pending.length} space{data.pending.length !== 1 ? 's' : ''} still in progress
 						</p>
 					{/if}
 					<a
@@ -195,15 +267,18 @@
 			</a>
 			<div class="glass rounded-full px-4 py-2 text-sm text-slate-300">
 				<Globe class="mr-1.5 inline-block h-4 w-4 text-purple-400" />
-				{data.models.length} island{data.models.length !== 1 ? 's' : ''}
+				{orderedModels.length} island{orderedModels.length !== 1 ? 's' : ''}
 			</div>
 		</div>
 	</nav>
 
 	<!-- Controls Panel -->
-	{#if data.models.length > 0}
+	{#if orderedModels.length > 0}
 		<div class="absolute bottom-4 left-1/2 z-20 -translate-x-1/2">
-			<div class="glass flex items-center gap-1.5 rounded-full px-2 py-1.5 sm:gap-2 sm:px-3">
+			<div
+				class="glass flex items-center gap-1.5 rounded-full px-2 py-1.5 sm:gap-2 sm:px-3"
+				class:mb-[220px]={showArrangePanel}
+			>
 				<button
 					onclick={resetView}
 					class="smooth-transition flex h-9 items-center gap-1.5 rounded-full px-3 text-xs text-slate-300 hover:bg-white/10 hover:text-white"
@@ -229,6 +304,22 @@
 				<div class="h-5 w-px bg-white/10"></div>
 
 				<button
+					onclick={() => {
+						showArrangePanel = !showArrangePanel;
+						if (showArrangePanel) selectedRoom = null;
+					}}
+					class="smooth-transition flex h-9 items-center gap-1.5 rounded-full px-3 text-xs transition-colors hover:bg-white/10 {showArrangePanel
+						? 'text-purple-300'
+						: 'text-slate-300 hover:text-white'}"
+					title="Arrange islands"
+				>
+					<LayoutGrid class="h-3.5 w-3.5" />
+					<span class="hidden sm:inline">Arrange</span>
+				</button>
+
+				<div class="h-5 w-px bg-white/10"></div>
+
+				<button
 					onclick={() => (showControls = !showControls)}
 					class="smooth-transition flex h-9 items-center gap-1.5 rounded-full px-3 text-xs text-slate-300 hover:bg-white/10 hover:text-white"
 					title="Keyboard shortcuts"
@@ -239,7 +330,7 @@
 		</div>
 
 		<!-- Keyboard shortcuts help -->
-		{#if showControls}
+		{#if showControls && !showArrangePanel}
 			<div class="slide-up absolute right-4 bottom-20 z-20 sm:right-6">
 				<div class="glass rounded-xl p-3 text-[11px] text-slate-400">
 					<div class="mb-1.5 flex items-center justify-between">
@@ -264,7 +355,7 @@
 	{/if}
 
 	<!-- Selected Island Info Panel -->
-	{#if selectedRoom}
+	{#if selectedRoom && !showArrangePanel}
 		<div class="slide-up absolute top-4 right-4 z-20 w-72 sm:top-6 sm:right-6">
 			<div class="glass-panel overflow-hidden rounded-2xl">
 				<div class="relative aspect-video overflow-hidden">
@@ -305,13 +396,13 @@
 		</div>
 	{/if}
 
-	<!-- Pending 3D Generation Panel -->
-	{#if data.pending.length > 0 && !selectedRoom}
+	<!-- Pending Spaces Panel -->
+	{#if data.pending.length > 0 && !selectedRoom && !showArrangePanel}
 		<div class="absolute top-4 right-4 z-20 w-64 sm:top-6 sm:right-6">
 			<div class="glass rounded-xl p-4">
 				<div class="mb-3 flex items-center gap-2">
-					<Box class="h-4 w-4 text-purple-400" />
-					<h3 class="text-xs font-semibold text-white">Pending 3D</h3>
+					<Hammer class="h-4 w-4 text-purple-400" />
+					<h3 class="text-xs font-semibold text-white">In Progress</h3>
 				</div>
 				<div class="max-h-48 space-y-2 overflow-y-auto">
 					{#each data.pending as ws (ws.id)}
@@ -321,25 +412,134 @@
 								<span class="text-xs text-slate-300">{ws.name}</span>
 							</div>
 							<button
-								onclick={() => generate3d(ws.id)}
-								disabled={isGenerating3d !== null}
+								onclick={() => completeAndAdd(ws.id)}
+								disabled={isCompleting !== null}
 								class="flex h-7 items-center gap-1 rounded-md border border-purple-500/20 bg-purple-500/10 px-2 text-[10px] font-medium text-purple-300 transition-colors hover:bg-purple-500/20 disabled:opacity-50"
 							>
-								{#if isGenerating3d === ws.id}
+								{#if isCompleting === ws.id}
 									<Loader2 class="h-3 w-3 animate-spin" />
 								{:else}
-									<Box class="h-3 w-3" />
+									Add
 								{/if}
-								3D
 							</button>
 						</div>
 					{/each}
 				</div>
-				{#if generateError}
+				{#if completeError}
 					<div class="mt-2 rounded bg-rose-500/10 px-2 py-1 text-[10px] text-rose-300">
-						{generateError}
+						{completeError}
 					</div>
 				{/if}
+			</div>
+		</div>
+	{/if}
+
+	<!-- Arrange Panel (Hex Grid Drawer) -->
+	{#if showArrangePanel}
+		<div
+			class="absolute right-0 bottom-0 left-0 z-30"
+			transition:fly={{ y: 200, duration: 300, easing: cubicOut }}
+		>
+			<div class="glass-panel border-t border-white/10 px-4 py-4 sm:px-6">
+				<!-- Header -->
+				<div class="mb-3 flex items-center justify-between">
+					<div class="flex items-center gap-2">
+						<LayoutGrid class="h-4 w-4 text-purple-400" />
+						<h3 class="text-xs font-semibold text-white">Arrange Your World</h3>
+						<span class="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-slate-400">
+							Drag to reorder
+						</span>
+					</div>
+					<div class="flex items-center gap-2">
+						<button
+							onclick={saveOrder}
+							disabled={isSaving}
+							class="flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-medium transition-colors {saveSuccess
+								? 'bg-emerald-600 text-white'
+								: 'bg-purple-600 text-white hover:bg-purple-500'} disabled:opacity-50"
+						>
+							{#if isSaving}
+								<Loader2 class="h-3.5 w-3.5 animate-spin" />
+							{:else if saveSuccess}
+								<Check class="h-3.5 w-3.5" />
+								Saved
+							{:else}
+								Save
+							{/if}
+						</button>
+						<button
+							onclick={() => (showArrangePanel = false)}
+							class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+						>
+							<X class="h-4 w-4" />
+						</button>
+					</div>
+				</div>
+
+				<!-- Hex grid -->
+				<div class="flex gap-2 overflow-x-auto pb-2">
+					{#each orderedModels as model, i (model.id)}
+						<div
+							class="hex-cell group relative flex-shrink-0 cursor-grab select-none active:cursor-grabbing"
+							draggable="true"
+							ondragstart={() => handleDragStart(i)}
+							ondragover={(e) => handleDragOver(e, i)}
+							ondrop={() => handleDrop(i)}
+							ondragend={handleDragEnd}
+							role="listitem"
+						>
+							<!-- Position number -->
+							<div
+								class="absolute -top-1 -left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-purple-600 text-[9px] font-bold text-white shadow"
+							>
+								{i + 1}
+							</div>
+
+							<!-- Hex shape container -->
+							<div
+								class="hex-shape overflow-hidden transition-all duration-200 {dragOverIndex === i
+									? 'scale-110 ring-2 ring-purple-400'
+									: ''} {dragIndex === i ? 'opacity-40' : ''}"
+							>
+								<img
+									src={model.imageUrl}
+									alt={model.name}
+									class="h-full w-full object-cover"
+									draggable="false"
+								/>
+								<div
+									class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
+								></div>
+							</div>
+
+							<!-- Drag handle -->
+							<div
+								class="absolute top-1/2 -right-0.5 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100"
+							>
+								<GripVertical class="h-3.5 w-3.5 text-slate-400" />
+							</div>
+
+							<!-- Name -->
+							<p
+								class="mt-1 max-w-[72px] truncate text-center text-[9px] font-medium text-slate-400"
+							>
+								{model.name}
+							</p>
+						</div>
+					{/each}
+
+					<!-- Empty placeholder slots -->
+					{#each Array.from({ length: Math.max(0, data.totalSpaces - orderedModels.length) }, (__, i) => i) as pi (pi)}
+						<div class="hex-cell flex-shrink-0">
+							<div class="hex-shape hex-empty flex items-center justify-center">
+								<div class="text-center">
+									<Hammer class="mx-auto h-4 w-4 text-slate-600" />
+									<span class="mt-0.5 block text-[8px] text-slate-600">Pending</span>
+								</div>
+							</div>
+						</div>
+					{/each}
+				</div>
 			</div>
 		</div>
 	{/if}
@@ -369,5 +569,39 @@
 		50% {
 			box-shadow: 0 0 40px rgba(147, 51, 234, 0.6);
 		}
+	}
+
+	.hex-cell {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 80px;
+	}
+
+	.hex-shape {
+		position: relative;
+		width: 72px;
+		height: 72px;
+		clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+	}
+
+	.hex-empty {
+		background: rgba(255, 255, 255, 0.03);
+		border: none;
+	}
+
+	/* Dashed border illusion for empty hex */
+	.hex-empty::before {
+		content: '';
+		position: absolute;
+		inset: 2px;
+		clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+		background: repeating-linear-gradient(
+			90deg,
+			rgba(139, 92, 246, 0.15) 0px,
+			rgba(139, 92, 246, 0.15) 3px,
+			transparent 3px,
+			transparent 6px
+		);
 	}
 </style>

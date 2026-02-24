@@ -53,7 +53,7 @@
 					</div>
 					<h2 class="mb-2 text-lg font-semibold text-white">The Metaverse Awaits</h2>
 					<p class="mb-5 text-sm text-slate-400">
-						No completed spaces yet. As adventurers finish their quests and forge 3D models, their
+						No completed spaces yet. As adventurers finish their quests and forge spaces, their
 						islands will appear here.
 					</p>
 					<a

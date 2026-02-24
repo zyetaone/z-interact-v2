@@ -8,8 +8,9 @@
 		id: string;
 		name: string;
 		imageUrl: string;
-		glbUrl: string;
+		glbUrl?: string;
 		editCount: number;
+		sortOrder?: number;
 	}
 
 	export interface SceneControls {
@@ -19,10 +20,12 @@
 
 	let {
 		models = [],
+		totalSlots,
 		onroomselect,
 		controls = $bindable<SceneControls | null>(null)
 	}: {
 		models: IslandModel[];
+		totalSlots?: number;
 		onroomselect?: (room: IslandModel | null) => void;
 		controls?: SceneControls | null;
 	} = $props();
@@ -40,7 +43,7 @@
 <div class="relative h-full w-full">
 	{#if browser}
 		<Canvas {createRenderer} shadows={PCFSoftShadowMap} toneMapping={ACESFilmicToneMapping}>
-			<Scene {models} {onroomselect} bind:controls />
+			<Scene {models} {totalSlots} {onroomselect} bind:controls />
 		</Canvas>
 	{/if}
 
