@@ -25,7 +25,6 @@ export const load: PageServerLoad = async ({ cookies }) => {
 				id: s.id,
 				name: s.name,
 				imageUrl: s.currentImageUrl,
-				glbUrl: s.glbUrl ?? undefined,
 				editCount: s.editCount,
 				sortOrder: s.sortOrder
 			}))

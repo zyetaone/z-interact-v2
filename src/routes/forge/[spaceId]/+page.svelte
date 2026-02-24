@@ -28,8 +28,9 @@
 
 	let { data } = $props();
 
-	const { space, history, allSpaces } = data;
-	let workspace = $state(new ForgeWorkspace({ space, history, allSpaces }));
+	let workspace = $state(
+		new ForgeWorkspace({ space: data.space, history: data.history, allSpaces: data.allSpaces })
+	);
 	let editor = $state(new Editor());
 	let commandBarRef: ReturnType<typeof CommandBar> | undefined = $state();
 	let errorTimer: ReturnType<typeof setTimeout> | undefined;

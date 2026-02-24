@@ -262,7 +262,6 @@
 	{@const pos = gridPosition(i)}
 	<RoomModel
 		imageUrl={model.imageUrl}
-		glbUrl={model.glbUrl}
 		name={model.name}
 		position={pos}
 		index={i}

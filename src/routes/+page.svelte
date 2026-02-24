@@ -11,9 +11,9 @@
 		data.spaces.find((s) => s.status !== 'complete')?.id ?? data.spaces[0]?.id ?? ''
 	);
 
-	function resetSession() {
-		document.cookie = 'session_id=; path=/; max-age=0';
-		window.location.reload();
+	async function resetSession() {
+		await fetch('/api/session', { method: 'DELETE' });
+		window.location.href = '/';
 	}
 </script>
 

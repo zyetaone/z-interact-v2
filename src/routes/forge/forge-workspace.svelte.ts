@@ -22,7 +22,6 @@ export class ForgeWorkspace {
 	versions = $state<Version[]>([]);
 	activeId = $state<string | null>(null);
 	status = $state<'forging' | 'complete'>('forging');
-	glbUrl = $state<string | null>(null);
 	editCount = $state(0);
 	originalImageUrl = $state('');
 	spaceId = $state('');
@@ -78,7 +77,6 @@ export class ForgeWorkspace {
 		this.editCount = init.space.editCount;
 		this.activeId = init.space.activeNodeId;
 		this.status = init.space.status === 'complete' ? 'complete' : 'forging';
-		this.glbUrl = init.space.glbUrl ?? null;
 		this.versions = init.history;
 		this.allSpaces = init.allSpaces ?? [];
 	}
@@ -159,9 +157,8 @@ export class ForgeWorkspace {
 		this.errorMessage = '';
 
 		try {
-			const result = await completeSpace({ spaceId: this.spaceId });
+			await completeSpace({ spaceId: this.spaceId });
 			this.status = 'complete';
-			this.glbUrl = result.space?.glbUrl ?? null;
 			// Update this space's status in allSpaces
 			this.allSpaces = this.allSpaces.map((s) =>
 				s.id === this.spaceId ? { ...s, status: 'complete' } : s

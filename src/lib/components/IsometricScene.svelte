@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { Canvas } from '@threlte/core';
-	import { WebGLRenderer, PCFSoftShadowMap, ACESFilmicToneMapping } from 'three';
+	import { WebGLRenderer, PCFShadowMap, ACESFilmicToneMapping } from 'three';
 	import Scene from './scene/Scene.svelte';
 
 	export interface IslandModel {
 		id: string;
 		name: string;
 		imageUrl: string;
-		glbUrl?: string;
 		editCount: number;
 		sortOrder?: number;
 	}
@@ -42,7 +41,7 @@
 
 <div class="relative h-full w-full">
 	{#if browser}
-		<Canvas {createRenderer} shadows={PCFSoftShadowMap} toneMapping={ACESFilmicToneMapping}>
+		<Canvas {createRenderer} shadows={PCFShadowMap} toneMapping={ACESFilmicToneMapping}>
 			<Scene {models} {totalSlots} {onroomselect} bind:controls />
 		</Canvas>
 	{/if}

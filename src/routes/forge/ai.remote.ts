@@ -1,12 +1,7 @@
 import * as v from 'valibot';
 import { command, getRequestEvent } from '$app/server';
-import {
-	createImageEditor,
-	createImageSegmenter,
-	generateGlb,
-	resolveImageForFal
-} from '$lib/server/ai/index';
-import { persistImage, persistGlb } from '$lib/server/storage';
+import { createImageEditor, createImageSegmenter } from '$lib/server/ai/index';
+import { persistImage } from '$lib/server/storage';
 import { getSpace, addEditNode, deleteEditNode, updateSpace } from '$lib/server/db/queries';
 import { BLOCKED_TERMS, MAX_FIELD_LENGTH } from '$lib/utils/edit-prompt';
 
@@ -144,20 +139,10 @@ export const completeSpace = command(CompleteSpaceSchema, async (data) => {
 		return { space };
 	}
 
-	// Generate 3D model from workspace image (graceful degradation on failure)
-	let glbUrl: string | null = null;
-	try {
-		const falImageUrl = await resolveImageForFal(space.currentImageUrl);
-		const glbResult = await generateGlb({ imageUrl: falImageUrl });
-		glbUrl = await persistGlb(glbResult.glbUrl);
-	} catch {
-		// GLB generation failed — space still completes, World shows room corner fallback
-		console.warn(`GLB generation failed for space ${data.spaceId}, completing without 3D model`);
-	}
-
+	// Complete immediately — World page renders isometric room corners
+	// with the workspace image as texture (no GLB generation needed)
 	const updatedSpace = await updateSpace(data.spaceId, {
-		status: 'complete',
-		glbUrl
+		status: 'complete'
 	});
 
 	return { space: updatedSpace };
