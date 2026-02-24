@@ -6,7 +6,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	const sessionId = cookies.get('session_id');
 	if (!sessionId) throw error(401, 'Unauthorized');
 
-	const { order } = await request.json();
+	let body: unknown;
+	try {
+		body = await request.json();
+	} catch {
+		throw error(400, 'Invalid JSON body');
+	}
+	const { order } = body as { order?: unknown };
 	if (!Array.isArray(order)) throw error(400, 'order must be an array');
 
 	// Validate shape

@@ -26,8 +26,6 @@ export interface MaskData {
 	assetUrl: string | null;
 }
 
-export type WorkspaceStatus = 'upload' | 'preview' | 'locked';
-
 export interface Version {
 	id: string;
 	step: number;
@@ -35,10 +33,6 @@ export interface Version {
 	imageUrl: string;
 	prompt: string;
 	createdAt: string;
-}
-
-export interface EditHistoryRow extends Version {
-	spaceId: string;
 }
 
 export interface TreeNode extends Version {

@@ -314,6 +314,7 @@
 					onclick={resetView}
 					class="smooth-transition flex h-9 items-center gap-1.5 rounded-full px-3 text-xs text-slate-300 hover:bg-white/10 hover:text-white"
 					title="Reset camera"
+				aria-label="Reset camera to overview"
 				>
 					<RotateCcw class="h-3.5 w-3.5" />
 					<span class="hidden sm:inline">Overview</span>
@@ -327,6 +328,7 @@
 						? 'text-purple-300'
 						: 'text-slate-300 hover:text-white'}"
 					title="Toggle avatar walk mode (WASD)"
+				aria-label="Toggle avatar walk mode"
 				>
 					<Gamepad2 class="h-3.5 w-3.5" />
 					<span class="hidden sm:inline">{avatarActive ? 'Walking' : 'Walk'}</span>
@@ -344,6 +346,7 @@
 						? 'text-purple-300'
 						: 'text-slate-300 hover:text-white'}"
 					title="Arrange islands"
+				aria-label="Arrange islands"
 				>
 					<LayoutGrid class="h-3.5 w-3.5" />
 					<span class="hidden sm:inline">Arrange</span>
@@ -355,6 +358,7 @@
 					onclick={() => (showControls = !showControls)}
 					class="smooth-transition flex h-9 items-center gap-1.5 rounded-full px-3 text-xs text-slate-300 hover:bg-white/10 hover:text-white"
 					title="Keyboard shortcuts"
+				aria-label="Keyboard shortcuts"
 				>
 					<Keyboard class="h-3.5 w-3.5" />
 				</button>

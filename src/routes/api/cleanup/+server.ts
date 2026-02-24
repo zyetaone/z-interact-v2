@@ -23,33 +23,38 @@ export const POST: RequestHandler = async ({ platform, request }) => {
 
 	const db = getDb(platform);
 
-	// Find stale sessions (non-seed only)
-	const stale = await db
-		.select({ id: sessions.id })
-		.from(sessions)
-		.where(lt(sessions.updatedAt, cutoff))
-		.all();
+	try {
+		// Find stale sessions (non-seed only)
+		const stale = await db
+			.select({ id: sessions.id })
+			.from(sessions)
+			.where(lt(sessions.updatedAt, cutoff))
+			.all();
 
-	const staleIds = stale.filter(Boolean).map((s) => s.id);
-	if (staleIds.length === 0) {
-		return Response.json({ deleted: 0 });
+		const staleIds = stale.filter(Boolean).map((s) => s.id);
+		if (staleIds.length === 0) {
+			return Response.json({ deleted: 0 });
+		}
+
+		// Find spaces belonging to stale sessions
+		const staleSpaces = await db
+			.select({ id: spaces.id })
+			.from(spaces)
+			.where(inArray(spaces.sessionId, staleIds))
+			.all();
+		const spaceIds = staleSpaces.map((s) => s.id);
+
+		// Delete in dependency order: edit_history → spaces → quest_choices → sessions
+		if (spaceIds.length > 0) {
+			await db.delete(editHistory).where(inArray(editHistory.spaceId, spaceIds)).run();
+			await db.delete(spaces).where(inArray(spaces.id, spaceIds)).run();
+		}
+		await db.delete(questChoices).where(inArray(questChoices.sessionId, staleIds)).run();
+		await db.delete(sessions).where(inArray(sessions.id, staleIds)).run();
+
+		return Response.json({ deleted: staleIds.length });
+	} catch (e) {
+		const message = e instanceof Error ? e.message : 'Cleanup failed';
+		return Response.json({ error: message }, { status: 500 });
 	}
-
-	// Find spaces belonging to stale sessions
-	const staleSpaces = await db
-		.select({ id: spaces.id })
-		.from(spaces)
-		.where(inArray(spaces.sessionId, staleIds))
-		.all();
-	const spaceIds = staleSpaces.map((s) => s.id);
-
-	// Delete in dependency order: edit_history → spaces → quest_choices → sessions
-	if (spaceIds.length > 0) {
-		await db.delete(editHistory).where(inArray(editHistory.spaceId, spaceIds)).run();
-		await db.delete(spaces).where(inArray(spaces.id, spaceIds)).run();
-	}
-	await db.delete(questChoices).where(inArray(questChoices.sessionId, staleIds)).run();
-	await db.delete(sessions).where(inArray(sessions.id, staleIds)).run();
-
-	return Response.json({ deleted: staleIds.length });
 };

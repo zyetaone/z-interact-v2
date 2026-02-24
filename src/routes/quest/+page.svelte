@@ -168,7 +168,7 @@
 					<!-- Option A -->
 					<button
 						onclick={() => pick('a')}
-						class="group relative overflow-hidden rounded-2xl transition-transform duration-300 focus:outline-none
+						class="group relative overflow-hidden rounded-2xl transition-transform duration-300 focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950
 							{chosen === 'a'
 							? 'scale-105 ring-2 ring-purple-400'
 							: chosen === 'b'
@@ -192,7 +192,7 @@
 					<!-- Option B -->
 					<button
 						onclick={() => pick('b')}
-						class="group relative overflow-hidden rounded-2xl transition-transform duration-300 focus:outline-none
+						class="group relative overflow-hidden rounded-2xl transition-transform duration-300 focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950
 							{chosen === 'b'
 							? 'scale-105 ring-2 ring-purple-400'
 							: chosen === 'a'

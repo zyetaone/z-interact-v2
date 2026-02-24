@@ -46,20 +46,20 @@ Local dev uses `DATABASE_URL=file:local.db` (libSQL fallback). Production uses D
 
 ### Remote Functions (Critical Pattern)
 
-The app uses SvelteKit's **experimental `command()` remote functions** (`svelte.config.js: experimental.remoteFunctions = true`). The core AI operations are defined in `src/routes/table/ai.remote.ts` and called directly from Svelte components as typed async functions — no fetch/REST boilerplate.
+The app uses SvelteKit's **experimental `command()` remote functions** (`svelte.config.js: experimental.remoteFunctions = true`). The core AI operations are defined in `src/routes/forge/ai.remote.ts` and called directly from Svelte components as typed async functions — no fetch/REST boilerplate.
 
 Remote commands defined:
 
 - `editImage` — AI image editing with mask/asset support, content filtering, edit limit enforcement
 - `segmentObject` — SAM2 point-based segmentation
 - `deleteImage` — Version tree leaf node deletion
-- `lockImage` — Finalize workspace for presentation
+- `completeSpace` — Mark a space as complete for the world view
 
 All inputs validated with Valibot schemas. This is the primary server interaction pattern for the editor — prefer adding new commands here over creating new API routes.
 
 ### Database Layer (`src/lib/server/db/`)
 
-- `schema.ts` — Two tables: `workspaces` (per-table state) and `editHistory` (version tree nodes)
+- `schema.ts` — Four tables: `sessions`, `questChoices`, `spaces`, `editHistory`
 - `index.ts` — `getDb(platform?)` factory: D1 via WeakMap cache (production) or libSQL singleton (local dev)
 - `queries.ts` — All DB operations use `getRequestEvent()` internally via a private `db()` helper
 

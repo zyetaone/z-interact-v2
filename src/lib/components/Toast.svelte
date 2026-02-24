@@ -22,6 +22,7 @@
 				<button
 					onclick={() => dismissToast(t.id)}
 					class="flex-shrink-0 text-white/40 transition-colors hover:text-white"
+					aria-label="Dismiss notification"
 				>
 					<X class="h-3.5 w-3.5" />
 				</button>
