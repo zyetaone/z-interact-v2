@@ -7,6 +7,8 @@ export const sessions = sqliteTable('sessions', {
 		.$defaultFn(() => crypto.randomUUID()),
 	name: text('name').notNull().default('Adventurer'),
 	questCompleted: integer('quest_completed', { mode: 'boolean' }).notNull().default(false),
+	archetype: text('archetype'),
+	isSeed: integer('is_seed', { mode: 'boolean' }).notNull().default(false),
 	createdAt: text('created_at')
 		.notNull()
 		.$defaultFn(() => new Date().toISOString()),

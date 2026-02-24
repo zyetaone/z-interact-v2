@@ -3,7 +3,9 @@
 	import { browser } from '$app/environment';
 	import { QuestEngine } from '$lib/quest-engine.svelte';
 	import { QUEST_STEPS } from '$lib/config/quest';
-	import { Sparkles, ArrowRight, ChevronRight } from '@lucide/svelte';
+	import { computeArchetype, type Archetype } from '$lib/config/archetypes';
+	import CinematicModal from '$lib/components/CinematicModal.svelte';
+	import { Sparkles, ArrowRight, ChevronRight, Fingerprint } from '@lucide/svelte';
 	import { saveQuest } from './ai.remote';
 	import { fly, scale } from 'svelte/transition';
 
@@ -45,6 +47,19 @@
 
 	let chosen = $state<'a' | 'b' | null>(null);
 	let saving = $state(false);
+	let showReveal = $state(false);
+	let revealArchetype = $state<Archetype | null>(null);
+
+	// When quest completes, compute archetype and trigger reveal
+	$effect(() => {
+		if (engine.isComplete && !showReveal && !revealArchetype) {
+			const archetype = computeArchetype(engine.choices);
+			revealArchetype = archetype;
+			setTimeout(() => {
+				showReveal = true;
+			}, 300);
+		}
+	});
 
 	function pick(option: 'a' | 'b') {
 		if (chosen) return;
@@ -102,7 +117,7 @@
 	<div class="fixed top-0 right-0 left-0 z-50">
 		<div class="h-1 bg-white/5">
 			<div
-				class="h-full bg-gradient-to-r from-purple-500 to-violet-400 transition-all duration-500 ease-out"
+				class="shimmer-bar h-full bg-gradient-to-r from-purple-500 to-violet-400 transition-all duration-500 ease-out"
 				style="width: {engine.progress * 100}%"
 			></div>
 		</div>
@@ -188,7 +203,7 @@
 			</div>
 		{/key}
 	{:else}
-		<!-- Results summary -->
+		<!-- Results summary (behind the modal) -->
 		<div
 			class="flex flex-1 flex-col items-center justify-center px-4 py-16"
 			in:scale={{ duration: 500, start: 0.9 }}
@@ -208,7 +223,7 @@
 			</p>
 
 			<!-- Results grid -->
-			<div class="mb-10 grid w-full max-w-4xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+			<div class="mb-10 grid w-full max-w-4xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
 				{#each engine.results as result, i (result.stepId)}
 					<div
 						class="celebrate overflow-hidden rounded-xl border border-white/10 bg-white/5"
@@ -244,9 +259,9 @@
 				class="inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-purple-500 disabled:opacity-50 disabled:hover:scale-100"
 			>
 				{#if saving}
-					Saving…
+					Saving...
 				{:else}
-					Start Forging
+					Enter the Forge
 					<ArrowRight class="h-5 w-5" />
 				{/if}
 			</button>
@@ -264,3 +279,154 @@
 		</a>
 	</div>
 </div>
+
+<!-- Personality Reveal Modal -->
+<CinematicModal open={showReveal} onclose={() => (showReveal = false)}>
+	{#if revealArchetype}
+		<!-- Stagger-animated content -->
+		<div
+			class="reveal-icon mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-purple-500/20"
+		>
+			<Fingerprint class="h-10 w-10 text-purple-300" />
+		</div>
+
+		<p
+			class="reveal-subtitle mb-1 text-sm font-medium tracking-widest text-purple-400/80 uppercase"
+		>
+			You are...
+		</p>
+
+		<h2 class="reveal-name mb-3 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+			{revealArchetype.name}
+		</h2>
+
+		<p class="reveal-description mb-8 max-w-sm text-lg leading-relaxed text-slate-300">
+			{revealArchetype.description}
+		</p>
+
+		<!-- Space thumbnails -->
+		<div class="reveal-spaces mb-8 flex gap-3">
+			{#each engine.results as result, i (result.stepId)}
+				<div
+					class="reveal-space-thumb h-16 w-16 overflow-hidden rounded-lg border border-white/10"
+					style="animation-delay: {i * 80}ms"
+				>
+					<img src={result.imageUrl} alt={result.spaceName} class="h-full w-full object-cover" />
+				</div>
+			{/each}
+		</div>
+
+		<!-- CTA -->
+		<button
+			onclick={() => (showReveal = false)}
+			class="reveal-cta pulse-glow inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-purple-500"
+		>
+			Enter the Forge
+			<ArrowRight class="h-5 w-5" />
+		</button>
+	{/if}
+</CinematicModal>
+
+<style>
+	/* Shimmer effect on progress bar */
+	.shimmer-bar {
+		position: relative;
+		overflow: hidden;
+	}
+	.shimmer-bar::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			rgba(255, 255, 255, 0.15) 50%,
+			transparent 100%
+		);
+		background-size: 200% 100%;
+		animation: shimmer 2s infinite;
+	}
+
+	@keyframes shimmer {
+		0% {
+			background-position: -200% 0;
+		}
+		100% {
+			background-position: 200% 0;
+		}
+	}
+
+	/* Staggered reveal animations */
+	.reveal-icon {
+		animation: revealScale 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+		animation-delay: 200ms;
+	}
+
+	.reveal-subtitle {
+		animation: revealFade 400ms ease-out both;
+		animation-delay: 500ms;
+	}
+
+	.reveal-name {
+		animation: revealFade 500ms ease-out both;
+		animation-delay: 700ms;
+	}
+
+	.reveal-description {
+		animation: revealFade 400ms ease-out both;
+		animation-delay: 1000ms;
+	}
+
+	.reveal-spaces {
+		animation: revealFade 400ms ease-out both;
+		animation-delay: 1200ms;
+	}
+
+	.reveal-space-thumb {
+		animation: revealScale 300ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+		animation-delay: calc(1300ms + var(--thumb-delay, 0ms));
+	}
+
+	.reveal-space-thumb:nth-child(1) {
+		--thumb-delay: 0ms;
+	}
+	.reveal-space-thumb:nth-child(2) {
+		--thumb-delay: 80ms;
+	}
+	.reveal-space-thumb:nth-child(3) {
+		--thumb-delay: 160ms;
+	}
+	.reveal-space-thumb:nth-child(4) {
+		--thumb-delay: 240ms;
+	}
+	.reveal-space-thumb:nth-child(5) {
+		--thumb-delay: 320ms;
+	}
+
+	.reveal-cta {
+		animation: revealFade 400ms ease-out both;
+		animation-delay: 1800ms;
+	}
+
+	@keyframes revealScale {
+		from {
+			opacity: 0;
+			transform: scale(0.8);
+		}
+		to {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	@keyframes revealFade {
+		from {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+</style>

@@ -69,21 +69,6 @@ export const QUEST_STEPS: QuestStep[] = [
 	},
 	{
 		id: 5,
-		category: 'Collaboration',
-		prompt: 'How does your team tackle big challenges?',
-		optionA: {
-			image: '/assets/PROJECT ROOM 02.jpg',
-			name: 'War Room',
-			tags: ['strategy', 'whiteboard', 'immersive']
-		},
-		optionB: {
-			image: '/assets/TRAINING RM.jpg',
-			name: 'Training Room',
-			tags: ['learning', 'lecture', 'scalable']
-		}
-	},
-	{
-		id: 6,
 		category: 'Privacy',
 		prompt: 'What does your ideal retreat look like?',
 		optionA: {
@@ -95,21 +80,6 @@ export const QUEST_STEPS: QuestStep[] = [
 			image: '/assets/FOCUS RM 02.jpg',
 			name: 'Quiet Pod',
 			tags: ['enclosed', 'soundproof', 'sanctuary']
-		}
-	},
-	{
-		id: 7,
-		category: 'Kitchen',
-		prompt: 'What fuels your workday?',
-		optionA: {
-			image: '/assets/OP MK PANTRY.jpg',
-			name: 'Maker Kitchen',
-			tags: ['barista', 'premium', 'craft']
-		},
-		optionB: {
-			image: '/assets/HYDRATION.jpg',
-			name: 'Hydration Station',
-			tags: ['minimal', 'quick', 'grab-and-go']
 		}
 	}
 ];

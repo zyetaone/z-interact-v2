@@ -7,6 +7,7 @@ import {
 	getSession,
 	getSessionSpaces
 } from '$lib/server/db/queries';
+import { computeArchetype } from '$lib/config/archetypes';
 
 const SaveQuestSchema = v.object({
 	choices: v.array(
@@ -32,7 +33,7 @@ export const saveQuest = command(SaveQuestSchema, async ({ choices }) => {
 
 	if (session.questCompleted) {
 		const existingSpaces = await getSessionSpaces(sessionId);
-		return { spaceIds: existingSpaces.map((s) => s.id) };
+		return { spaceIds: existingSpaces.map((s) => s.id), archetype: session.archetype ?? null };
 	}
 
 	const spaceIds: string[] = [];
@@ -51,7 +52,8 @@ export const saveQuest = command(SaveQuestSchema, async ({ choices }) => {
 		spaceIds.push(space.id);
 	}
 
-	await updateSession(sessionId, { questCompleted: true });
+	const archetype = computeArchetype(choices.map((c) => c.selected));
+	await updateSession(sessionId, { questCompleted: true, archetype: archetype.key });
 
-	return { spaceIds };
+	return { spaceIds, archetype: archetype.key };
 });

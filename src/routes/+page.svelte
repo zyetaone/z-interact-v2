@@ -1,7 +1,10 @@
 <script lang="ts">
-	import { Sparkles, ArrowRight, Globe, Hammer } from '@lucide/svelte';
+	import { Sparkles, ArrowRight, Globe, Hammer, Fingerprint } from '@lucide/svelte';
+	import { ARCHETYPES } from '$lib/config/archetypes';
 
 	let { data } = $props();
+
+	const archetypeInfo = $derived(ARCHETYPES.find((a) => a.key === data.archetype));
 </script>
 
 <svelte:head>
@@ -25,9 +28,24 @@
 	{#if data.hasSession && data.questCompleted}
 		<!-- Returning user with completed quest -->
 		<main class="flex flex-1 flex-col items-center justify-center px-6 pt-20 pb-12">
+			{#if archetypeInfo}
+				<div
+					class="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-500/20 bg-purple-500/10 px-4 py-1.5"
+				>
+					<Fingerprint class="h-3.5 w-3.5 text-purple-400" />
+					<span class="text-xs font-semibold tracking-wide text-purple-300 uppercase">
+						{archetypeInfo.name}
+					</span>
+				</div>
+			{/if}
+
 			<h1 class="mb-2 text-center text-4xl font-bold sm:text-5xl">Welcome Back</h1>
 			<p class="mb-10 max-w-md text-center text-lg text-slate-400">
-				Your workspace is taking shape. Continue forging or explore the world.
+				{#if archetypeInfo}
+					{archetypeInfo.description}
+				{:else}
+					Your workspace is taking shape. Continue forging or explore the world.
+				{/if}
 			</p>
 
 			<!-- Spaces overview -->
@@ -99,7 +117,7 @@
 				Workspace Quest
 			</h1>
 			<p class="mb-10 max-w-lg text-center text-lg text-slate-400">
-				Design your ideal workspace through an interactive quest. Make 7 choices, forge your spaces
+				Design your ideal workspace through an interactive quest. Make 5 choices, forge your spaces
 				with AI, and explore them in 3D.
 			</p>
 
