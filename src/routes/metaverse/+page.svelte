@@ -90,13 +90,15 @@
 				<ChevronLeft class="h-4 w-4" />
 				<span class="hidden sm:inline">Home</span>
 			</a>
-			<a
-				href="{base}/world"
-				class="glass smooth-transition flex items-center gap-2 rounded-full px-4 py-2 text-sm text-slate-300 hover:scale-105 hover:text-white"
-			>
-				<Globe class="h-4 w-4" />
-				<span class="hidden sm:inline">Your World</span>
-			</a>
+			{#if data.hasSession}
+				<a
+					href="{base}/world"
+					class="glass smooth-transition flex items-center gap-2 rounded-full px-4 py-2 text-sm text-slate-300 hover:scale-105 hover:text-white"
+				>
+					<Globe class="h-4 w-4" />
+					<span class="hidden sm:inline">Your World</span>
+				</a>
+			{/if}
 		</div>
 
 		<div class="pointer-events-auto flex items-center gap-2">

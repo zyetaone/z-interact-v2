@@ -36,6 +36,19 @@ export function updateSession(
 		.get();
 }
 
+/**
+ * Atomically mark quest as completed. Returns the updated session if this caller
+ * won the race (quest_completed was false), or null if another request already completed it.
+ */
+export function tryCompleteQuest(id: string, archetype: string) {
+	return db()
+		.update(sessions)
+		.set({ questCompleted: true, archetype, updatedAt: new Date().toISOString() })
+		.where(and(eq(sessions.id, id), eq(sessions.questCompleted, false)))
+		.returning()
+		.get();
+}
+
 // --- Quest Choices ---
 
 export function saveQuestChoice(

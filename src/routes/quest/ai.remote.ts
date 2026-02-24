@@ -3,7 +3,7 @@ import { command, getRequestEvent } from '$app/server';
 import {
 	saveQuestChoice,
 	createSpace,
-	updateSession,
+	tryCompleteQuest,
 	getSession,
 	getSessionSpaces
 } from '$lib/server/db/queries';
@@ -31,11 +31,23 @@ export const saveQuest = command(SaveQuestSchema, async ({ choices }) => {
 	const session = await getSession(sessionId);
 	if (!session) throw new Error('Session not found');
 
-	if (session.questCompleted) {
+	// Compute archetype first (pure function, no DB)
+	const archetype = computeArchetype(choices.map((c) => c.selected));
+
+	// Atomic gate: only the first request to flip quest_completed wins
+	const claimed = await tryCompleteQuest(sessionId, archetype.key);
+
+	if (!claimed) {
+		// Another request already completed the quest — return existing data
 		const existingSpaces = await getSessionSpaces(sessionId);
-		return { spaceIds: existingSpaces.map((s) => s.id), archetype: session.archetype ?? null };
+		const existing = await getSession(sessionId);
+		return {
+			spaceIds: existingSpaces.map((s) => s.id),
+			archetype: existing?.archetype ?? archetype.key
+		};
 	}
 
+	// We won the race — create spaces
 	const spaceIds: string[] = [];
 
 	for (let i = 0; i < choices.length; i++) {
@@ -51,9 +63,6 @@ export const saveQuest = command(SaveQuestSchema, async ({ choices }) => {
 		});
 		spaceIds.push(space.id);
 	}
-
-	const archetype = computeArchetype(choices.map((c) => c.selected));
-	await updateSession(sessionId, { questCompleted: true, archetype: archetype.key });
 
 	return { spaceIds, archetype: archetype.key };
 });

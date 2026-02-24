@@ -335,7 +335,8 @@
 						showArrangePanel = !showArrangePanel;
 						if (showArrangePanel) selectedRoom = null;
 					}}
-					class="smooth-transition flex h-9 items-center gap-1.5 rounded-full px-3 text-xs transition-colors hover:bg-white/10 {showArrangePanel
+					disabled={isCompleting !== null}
+					class="smooth-transition flex h-9 items-center gap-1.5 rounded-full px-3 text-xs transition-colors hover:bg-white/10 disabled:opacity-40 {showArrangePanel
 						? 'text-purple-300'
 						: 'text-slate-300 hover:text-white'}"
 					title="Arrange islands"

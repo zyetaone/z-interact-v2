@@ -1,6 +1,15 @@
 import type { Handle } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
+	// CSRF: verify origin on mutation requests
+	if (event.request.method !== 'GET' && event.request.method !== 'HEAD') {
+		const origin = event.request.headers.get('origin');
+		const host = event.request.headers.get('host');
+		if (origin && host && new URL(origin).host !== host) {
+			return new Response('Forbidden', { status: 403 });
+		}
+	}
+
 	const response = await resolve(event);
 
 	// Security headers

@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { createSession, getSession } from '$lib/server/db/queries';
+import { redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	let sessionId = cookies.get('session_id');
@@ -7,6 +8,11 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
 	if (sessionId) {
 		session = await getSession(sessionId);
+	}
+
+	// Quest already completed — send back to dashboard
+	if (session?.questCompleted) {
+		redirect(302, '/');
 	}
 
 	if (!session) {
