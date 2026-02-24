@@ -149,8 +149,8 @@
 				Workspace Quest
 			</h1>
 			<p class="mb-10 max-w-lg text-center text-lg text-slate-400">
-				Design your ideal workspace through an interactive quest. Make 5 choices, forge your spaces
-				with AI, and explore them in 3D.
+				Design your ideal workspace through an interactive quest. Make choices, forge your spaces
+				with AI, and explore your floating island world.
 			</p>
 
 			<a

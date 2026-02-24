@@ -88,32 +88,31 @@ Svelte 5 class-based reactive state using `$state` and `$derived` runes. Manages
 
 ### Storage (`src/lib/server/storage.ts`)
 
-`persistImage()` / `persistGlb()` download from trusted fal.ai domains and upload to R2. Includes SSRF protection (HTTPS-only, domain allowlist, redirect blocking, size limits). Local dev proxies R2 via `/api/r2/[...key]`.
+`persistImage()` downloads from trusted fal.ai domains and uploads to R2. Includes SSRF protection (HTTPS-only, domain allowlist, redirect blocking, size limits). Local dev proxies R2 via `/api/r2/[...key]`.
 
 ### Routing
 
-| Route                | Purpose                                                           |
-| -------------------- | ----------------------------------------------------------------- |
-| `/`                  | Presenter dashboard                                               |
-| `/table/[tableId]`   | Participant workspace editor (tables 1-10, plus 0 for standalone) |
-| `/editor`            | Standalone editor (uses `EDITOR_TABLE_ID = 0`)                    |
-| `/gallery`           | All workspaces gallery view                                       |
-| `/gallery/[tableId]` | Single table gallery                                              |
-| `/video`             | Video engine (generates clips from locked workspaces)             |
-| `/video/[tableId]`   | Per-table video view                                              |
-| `/world`             | 3D isometric scene (Three.js, loads GLB models)                   |
-| `/workshop`          | Redirects to `/gallery`                                           |
+| Route                | Purpose                                                      |
+| -------------------- | ------------------------------------------------------------ |
+| `/`                  | Landing page / returning user dashboard                      |
+| `/quest`             | Interactive 5-step binary-choice quiz                        |
+| `/forge/[spaceId]`   | AI workspace editor (mask + prompt → inpainting)             |
+| `/world`             | 3D isometric scene (Three.js, image panels on hex islands)   |
+| `/metaverse`         | Shared gallery of all completed worlds                       |
 
 ### API Routes
 
-| Endpoint           | Method   | Purpose                                        |
-| ------------------ | -------- | ---------------------------------------------- |
-| `/api/workspace`   | POST     | Create/reset workspace for a table             |
-| `/api/poll`        | GET      | Gallery polling (all workspaces + timestamp)   |
-| `/api/upload`      | POST     | Upload image to R2 (10MB max, JPEG/PNG/WebP)   |
-| `/api/r2/[...key]` | GET      | Local dev R2 proxy (UUID-format keys only)     |
-| `/api/video`       | GET/POST | List locked images / generate video clip       |
-| `/api/iso`         | GET/POST | List GLB models / generate 3D model from image |
+| Endpoint           | Method | Purpose                                        |
+| ------------------ | ------ | ---------------------------------------------- |
+| `/api/iso`         | GET    | List all completed spaces                      |
+| `/api/iso`         | POST   | Mark a space as complete                       |
+| `/api/upload`      | POST   | Upload image to R2 (10MB max, JPEG/PNG/WebP)   |
+| `/api/r2/[...key]` | GET    | Local dev R2 proxy (UUID-format keys only)     |
+| `/api/video`       | GET/POST | List locked images / generate video clip     |
+| `/api/reorder`     | POST   | Save island arrangement order                  |
+| `/api/session`     | DELETE | Clear session cookie (server-side)             |
+| `/api/seed`        | POST   | Create seed content for demos                  |
+| `/api/cleanup`     | POST   | Remove stale sessions (bearer-token protected) |
 
 ### Config
 
@@ -135,7 +134,7 @@ Defined in `wrangler.jsonc` and typed in `src/app.d.ts` (`App.Platform.env`):
 | Binding                    | Type      | Usage                  |
 | -------------------------- | --------- | ---------------------- |
 | `DB`                       | D1        | SQLite database        |
-| `R2_IMAGES`                | R2 Bucket | Image/GLB storage      |
+| `R2_IMAGES`                | R2 Bucket | Image storage          |
 | `R2_PUBLIC_URL`            | Var       | Public R2 CDN base URL |
 | `FAL_API_KEY`              | Secret    | fal.ai API key         |
 | `CLOUDFLARE_ACCOUNT_ID`    | Secret    | AI Gateway (optional)  |

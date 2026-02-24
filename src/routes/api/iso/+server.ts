@@ -5,9 +5,7 @@ import type { RequestHandler } from './$types';
 /**
  * POST /api/iso
  *
- * Marks a space as complete for the 3D world view.
- * The world scene renders preset isometric room corners
- * with the workspace image as texture — no GLB generation needed.
+ * Marks a space as complete for the world view.
  * Body: { spaceId: string }
  */
 export const POST: RequestHandler = async ({ request, cookies }) => {

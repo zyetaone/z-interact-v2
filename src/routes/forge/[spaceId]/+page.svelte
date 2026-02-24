@@ -275,7 +275,7 @@
 					<div class="text-center">
 						<h2 class="text-2xl font-bold text-white">Space Complete!</h2>
 						<p class="mt-2 text-slate-400">
-							Your space has been transformed into a 3D island. View it in the World.
+							Your space is complete. View it as an island in the World.
 						</p>
 					</div>
 					<div class="flex gap-3">
@@ -673,7 +673,7 @@
 							<div
 								class="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white"
 							></div>
-							<span class="text-sm font-medium text-white/80">Generating 3D model...</span>
+							<span class="text-sm font-medium text-white/80">Completing space...</span>
 						</div>
 					{:else if workspace.versions.length > 0}
 						<button
@@ -689,7 +689,7 @@
 							<div
 								class="h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white"
 							></div>
-							<span class="text-sm font-medium text-white/80">Generating 3D model...</span>
+							<span class="text-sm font-medium text-white/80">Completing space...</span>
 						</div>
 					{:else}
 						<button

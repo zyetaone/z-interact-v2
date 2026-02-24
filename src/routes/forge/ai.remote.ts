@@ -139,8 +139,7 @@ export const completeSpace = command(CompleteSpaceSchema, async (data) => {
 		return { space };
 	}
 
-	// Complete immediately — World page renders isometric room corners
-	// with the workspace image as texture (no GLB generation needed)
+	// Complete immediately — World page renders the workspace image on an island
 	const updatedSpace = await updateSpace(data.spaceId, {
 		status: 'complete'
 	});
