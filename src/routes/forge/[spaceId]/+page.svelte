@@ -196,6 +196,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{workspace.spaceName} — Forge — ZyetaDX</title>
+</svelte:head>
+
 <div class="min-h-screen bg-slate-950 text-slate-200">
 	<!-- Header -->
 	<header class="border-b border-white/5 px-4 py-3 md:px-6 md:py-4">
