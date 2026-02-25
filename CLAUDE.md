@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-workspace-studio-v2 is a SvelteKit 2 application — an AI-powered workspace design platform for interactive seminars. Participants at physical tables (1-10) collaboratively edit workspace images using AI inpainting, segmentation, and 3D generation. Deployed on Cloudflare Workers with D1 (database) and R2 (image storage).
+workspace-studio-v2 is a SvelteKit 2 application — an AI-powered workspace design platform for interactive seminars. Participants take a personality quest, forge workspace spaces using AI inpainting and segmentation, then explore their creations as floating islands in an isometric 3D world. Deployed on Cloudflare Workers with D1 (database) and R2 (image storage).
 
 ## Development Commands
 
@@ -115,9 +115,9 @@ Svelte 5 class-based reactive state using `$state` and `$derived` runes. Manages
 
 ### Config
 
-- `src/lib/config/tables.ts` — `TABLE_COUNT = 10`, `EDITOR_TABLE_ID = 0`, `MAX_EDITS_PER_TABLE = 20`
 - `src/lib/config/assets.ts` — Furniture/workspace reference images (`ASSET_IMAGES`)
 - `src/lib/utils/edit-prompt.ts` — Content filter blocked terms list
+- `src/lib/server/db/queries.ts` — `MAX_EDITS_PER_SPACE = 20` (edit limit constant)
 
 ## Code Style
 
