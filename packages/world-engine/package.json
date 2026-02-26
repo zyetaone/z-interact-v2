@@ -1,0 +1,23 @@
+{
+	"name": "@zyeta/world-engine",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./scene/*": "./src/scene/*.svelte",
+		"./IsometricScene": "./src/IsometricScene.svelte"
+	},
+	"dependencies": {
+		"@zyeta/shared": "workspace:*",
+		"@threlte/core": "^8.4.0",
+		"@threlte/extras": "^9.8.1",
+		"three": "^0.183.1"
+	},
+	"devDependencies": {
+		"@types/three": "^0.183.1"
+	},
+	"peerDependencies": {
+		"svelte": "^5.0.0"
+	}
+}

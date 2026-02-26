@@ -1,0 +1,22 @@
+{
+	"name": "@zyeta/editor-engine",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./editor": "./src/editor.svelte.ts",
+		"./server": "./src/server/index.ts",
+		"./server/*": "./src/server/*.ts",
+		"./components/*": "./src/components/*.svelte",
+		"./actions/*": "./src/actions/*.svelte.ts",
+		"./utils/*": "./src/utils/*.ts"
+	},
+	"dependencies": {
+		"@zyeta/shared": "workspace:*",
+		"@fal-ai/client": "^1.9.3"
+	},
+	"peerDependencies": {
+		"svelte": "^5.0.0"
+	}
+}

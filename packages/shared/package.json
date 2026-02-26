@@ -1,0 +1,25 @@
+{
+	"name": "@zyeta/shared",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"exports": {
+		"./db": "./src/db/index.ts",
+		"./db/schema": "./src/db/schema.ts",
+		"./db/queries": "./src/db/queries.ts",
+		"./types": "./src/types/workspace.ts",
+		"./config/quest": "./src/config/quest.ts",
+		"./config/archetypes": "./src/config/archetypes.ts",
+		"./config/assets": "./src/config/assets.ts",
+		"./utils/*": "./src/utils/*.ts",
+		"./components/*": "./src/components/*.svelte"
+	},
+	"dependencies": {
+		"drizzle-orm": "^0.45.1",
+		"@libsql/client": "^0.17.0",
+		"valibot": "^1.2.0"
+	},
+	"peerDependencies": {
+		"svelte": "^5.0.0"
+	}
+}
