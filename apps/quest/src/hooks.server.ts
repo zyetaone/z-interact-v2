@@ -1,4 +1,17 @@
 import type { Handle } from '@sveltejs/kit';
+import { dev } from '$app/environment';
+import { setLocalDb } from '@zyeta/shared/db';
+
+// Initialize local dev DB (dynamic import avoids bundling @libsql/client in production)
+if (dev) {
+	const { drizzle } = await import('drizzle-orm/libsql');
+	const { createClient } = await import('@libsql/client');
+	const url = process.env.DATABASE_URL;
+	if (url) {
+		const schema = await import('@zyeta/shared/db/schema');
+		setLocalDb(drizzle(createClient({ url }), { schema }) as Parameters<typeof setLocalDb>[0]);
+	}
+}
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// CSRF: verify origin on mutation requests

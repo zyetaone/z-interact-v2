@@ -1,11 +1,20 @@
 import { fal } from '@fal-ai/client'
 
+/** Minimal R2-compatible bucket interface (avoids @cloudflare/workers-types dep) */
+export interface R2BucketLike {
+	get(key: string): Promise<{
+		arrayBuffer(): Promise<ArrayBuffer>
+		httpMetadata?: { contentType?: string }
+	} | null>
+	put(key: string, value: ArrayBuffer | ReadableStream, options?: unknown): Promise<unknown>
+}
+
 export interface FalEnv {
 	FAL_API_KEY: string
 	CLOUDFLARE_ACCOUNT_ID?: string
 	CLOUDFLARE_AI_GATEWAY_ID?: string
 	CLOUDFLARE_AIG_TOKEN?: string
-	R2_IMAGES?: R2Bucket
+	R2_IMAGES?: R2BucketLike
 	R2_PUBLIC_URL?: string
 }
 

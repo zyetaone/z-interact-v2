@@ -16,8 +16,11 @@
 	},
 	"dependencies": {
 		"drizzle-orm": "^0.45.1",
-		"@libsql/client": "^0.17.0",
+		"@lucide/svelte": "^0.563.1",
 		"valibot": "^1.2.0"
+	},
+	"devDependencies": {
+		"@libsql/client": "^0.17.0"
 	},
 	"peerDependencies": {
 		"svelte": "^5.0.0"

@@ -1,8 +1,10 @@
 // Trusted domains that fal.ai returns files from
 const TRUSTED_DOMAINS = ['fal.media', 'v3.fal.media', 'v3b.fal.media', 'storage.googleapis.com']
 
+import type { R2BucketLike } from './ai/fal-config'
+
 export interface StorageEnv {
-	R2_IMAGES: R2Bucket
+	R2_IMAGES: R2BucketLike
 	R2_PUBLIC_URL?: string
 }
 
