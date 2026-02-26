@@ -1,0 +1,37 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "workspace-studio-v2",
+	"compatibility_date": "2026-01-21",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+	"workers_dev": true,
+	"preview_urls": true,
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "workspace-studio-v2-db",
+			"database_id": "bd9f7b43-e407-4b7c-ba12-85879ea3063c",
+			"migrations_dir": "drizzle"
+		}
+	],
+	"ai": {
+		"binding": "AI"
+	},
+	"r2_buckets": [
+		{
+			"binding": "R2_IMAGES",
+			"bucket_name": "workspace-studio-v2-images"
+		}
+	],
+	"vars": {
+		"ENVIRONMENT": "development",
+		"R2_PUBLIC_URL": "https://pub-d134d0560f25425b9278dc90fe1bbb78.r2.dev"
+		// SECRETS go in .dev.vars (local) or `wrangler secret put` (prod):
+		// - FAL_API_KEY
+		// - CLOUDFLARE_AIG_TOKEN (if using AI Gateway)
+	}
+}

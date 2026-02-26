@@ -1,0 +1,1 @@
+ALTER TABLE `workspaces` ADD `glb_url` text;
