@@ -1,12 +1,14 @@
-import type { PageServerLoad } from './$types';
-import { getAllCompletedSpaces, getSession } from '@zyeta/shared/db/queries';
+import type { PageServerLoad } from './$types'
+import { getDb } from '@zyeta/shared/db'
+import { getAllCompletedSpaces, getSession } from '@zyeta/shared/db/queries'
 
-export const load: PageServerLoad = async ({ cookies }) => {
-	const sessionId = cookies.get('session_id');
-	const session = sessionId ? await getSession(sessionId) : null;
-	const allSpaces = await getAllCompletedSpaces();
+export const load: PageServerLoad = async ({ cookies, platform }) => {
+	const db = getDb(platform)
+	const sessionId = cookies.get('session_id')
+	const session = sessionId ? await getSession(db, sessionId) : null
+	const allSpaces = await getAllCompletedSpaces(db)
 
-	const uniqueSessions = new Set(allSpaces.map((s) => s.sessionId));
+	const uniqueSessions = new Set(allSpaces.map((s) => s.sessionId))
 
 	return {
 		models: allSpaces.map((s) => ({
@@ -17,5 +19,5 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		})),
 		participantCount: uniqueSessions.size,
 		hasSession: !!session
-	};
-};
+	}
+}

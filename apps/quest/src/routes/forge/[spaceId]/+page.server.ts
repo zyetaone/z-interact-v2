@@ -1,19 +1,21 @@
-import type { PageServerLoad } from './$types';
-import { error, redirect } from '@sveltejs/kit';
-import { getSpace, getEditHistory, getSessionSpaces } from '@zyeta/shared/db/queries';
+import type { PageServerLoad } from './$types'
+import { error, redirect } from '@sveltejs/kit'
+import { getDb } from '@zyeta/shared/db'
+import { getSpace, getEditHistory, getSessionSpaces } from '@zyeta/shared/db/queries'
 
-export const load: PageServerLoad = async ({ params, cookies }) => {
-	const sessionId = cookies.get('session_id');
-	if (!sessionId) redirect(302, '/?expired');
+export const load: PageServerLoad = async ({ params, cookies, platform }) => {
+	const sessionId = cookies.get('session_id')
+	if (!sessionId) redirect(302, '/?expired')
 
-	const space = await getSpace(params.spaceId);
-	if (!space) throw error(404, 'Space not found');
-	if (space.sessionId !== sessionId) throw error(403, 'Not your space');
+	const db = getDb(platform)
+	const space = await getSpace(db, params.spaceId)
+	if (!space) throw error(404, 'Space not found')
+	if (space.sessionId !== sessionId) throw error(403, 'Not your space')
 
 	const [history, allSpaces] = await Promise.all([
-		getEditHistory(space.id),
-		getSessionSpaces(sessionId)
-	]);
+		getEditHistory(db, space.id),
+		getSessionSpaces(db, sessionId)
+	])
 
 	return {
 		space,
@@ -31,5 +33,5 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 			status: s.status,
 			sortOrder: s.sortOrder
 		}))
-	};
-};
+	}
+}

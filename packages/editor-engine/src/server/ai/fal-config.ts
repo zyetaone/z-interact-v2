@@ -1,23 +1,25 @@
-import { fal } from '@fal-ai/client';
-import { getRequestEvent } from '$app/server';
+import { fal } from '@fal-ai/client'
+
+export interface FalEnv {
+	FAL_API_KEY: string
+	CLOUDFLARE_ACCOUNT_ID?: string
+	CLOUDFLARE_AI_GATEWAY_ID?: string
+	CLOUDFLARE_AIG_TOKEN?: string
+	R2_IMAGES?: R2Bucket
+	R2_PUBLIC_URL?: string
+}
 
 /**
  * Configure the fal.ai client with API key and optional AI Gateway proxy.
  * Call once at the start of any AI operation.
- *
- * Reads FAL_API_KEY from Cloudflare platform env (production)
- * or process.env (local dev). Optionally routes through Cloudflare
- * AI Gateway when CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_AI_GATEWAY_ID are set.
  */
-export function configureFal() {
-	const platform = getRequestEvent()?.platform;
-	const env = platform?.env;
-	const apiKey = env?.FAL_API_KEY || process.env.FAL_API_KEY;
-	if (!apiKey) throw new Error('FAL_API_KEY not set');
+export function configureFal(env: FalEnv) {
+	const apiKey = env.FAL_API_KEY
+	if (!apiKey) throw new Error('FAL_API_KEY not set')
 
-	const accountId = env?.CLOUDFLARE_ACCOUNT_ID;
-	const gatewayId = env?.CLOUDFLARE_AI_GATEWAY_ID;
-	const aigToken = env?.CLOUDFLARE_AIG_TOKEN || process.env.CLOUDFLARE_AIG_TOKEN;
+	const accountId = env.CLOUDFLARE_ACCOUNT_ID
+	const gatewayId = env.CLOUDFLARE_AI_GATEWAY_ID
+	const aigToken = env.CLOUDFLARE_AIG_TOKEN
 
 	if (accountId && gatewayId) {
 		fal.config({
@@ -32,9 +34,9 @@ export function configureFal() {
 					}
 				})
 			})
-		});
+		})
 	} else {
-		fal.config({ credentials: apiKey });
+		fal.config({ credentials: apiKey })
 	}
 }
 
@@ -47,40 +49,42 @@ export function configureFal() {
  *
  * If the URL is already HTTPS (e.g. R2 public URL or fal.media), returns as-is.
  */
-export async function resolveImageForFal(imageUrl: string): Promise<string> {
-	if (imageUrl.startsWith('https://')) return imageUrl;
+export async function resolveImageForFal(
+	imageUrl: string,
+	env: FalEnv,
+	requestOrigin?: string
+): Promise<string> {
+	if (imageUrl.startsWith('https://')) return imageUrl
 
 	// R2 paths — read from R2 bucket directly and upload to fal storage
 	if (imageUrl.startsWith('/api/r2/')) {
-		const platform = getRequestEvent()?.platform;
-		const r2 = platform?.env?.R2_IMAGES;
-		if (!r2) throw new Error('R2 not configured');
+		const r2 = env.R2_IMAGES
+		if (!r2) throw new Error('R2 not configured')
 
-		const key = imageUrl.replace('/api/r2/', '');
-		const object = await r2.get(key);
-		if (!object) throw new Error(`Image not found in R2: ${key}`);
+		const key = imageUrl.replace('/api/r2/', '')
+		const object = await r2.get(key)
+		if (!object) throw new Error(`Image not found in R2: ${key}`)
 
-		const buffer = await object.arrayBuffer();
-		const contentType = object.httpMetadata?.contentType || 'image/png';
-		const blob = new Blob([buffer], { type: contentType });
+		const buffer = await object.arrayBuffer()
+		const contentType = object.httpMetadata?.contentType || 'image/png'
+		const blob = new Blob([buffer], { type: contentType })
 
-		configureFal();
-		const falUrl = await fal.storage.upload(blob);
-		return falUrl;
+		configureFal(env)
+		const falUrl = await fal.storage.upload(blob)
+		return falUrl
 	}
 
 	// Local paths (/assets/*, /uploads/*) — fetch via own origin and upload to fal storage
 	if (imageUrl.startsWith('/')) {
-		const origin = getRequestEvent()?.url?.origin;
-		if (!origin) throw new Error('Cannot resolve local path: no request context');
+		if (!requestOrigin) throw new Error('Cannot resolve local path: no request context')
 
-		const response = await fetch(`${origin}${encodeURI(imageUrl)}`);
-		if (!response.ok) throw new Error(`Failed to fetch local asset: ${response.status}`);
-		const blob = await response.blob();
+		const response = await fetch(`${requestOrigin}${encodeURI(imageUrl)}`)
+		if (!response.ok) throw new Error(`Failed to fetch local asset: ${response.status}`)
+		const blob = await response.blob()
 
-		configureFal();
-		return await fal.storage.upload(blob);
+		configureFal(env)
+		return await fal.storage.upload(blob)
 	}
 
-	throw new Error(`Cannot resolve image URL for fal.ai: ${imageUrl}`);
+	throw new Error(`Cannot resolve image URL for fal.ai: ${imageUrl}`)
 }

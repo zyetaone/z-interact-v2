@@ -1,57 +1,54 @@
-import { eq, and, lt, asc, sql } from 'drizzle-orm';
-import { getDb } from './index';
-import { getRequestEvent } from '$app/server';
-import { sessions, questChoices, spaces, editHistory } from './schema';
-import type { NewSession, NewSpace } from './schema';
+import { eq, and, lt, asc, sql } from 'drizzle-orm'
+import type { DbClient } from './index'
+import { sessions, questChoices, spaces, editHistory } from './schema'
+import type { NewSession, NewSpace } from './schema'
 
-const MAX_EDITS_PER_SPACE = 20;
-
-function db() {
-	return getDb(getRequestEvent()?.platform);
-}
+const MAX_EDITS_PER_SPACE = 20
 
 // --- Sessions ---
 
-export function createSession(data?: Partial<NewSession>) {
-	return db()
+export function createSession(db: DbClient, data?: Partial<NewSession>) {
+	return db
 		.insert(sessions)
 		.values(data ?? {})
 		.returning()
-		.get();
+		.get()
 }
 
-export function getSession(id: string) {
-	return db().query.sessions.findFirst({ where: eq(sessions.id, id) });
+export function getSession(db: DbClient, id: string) {
+	return db.query.sessions.findFirst({ where: eq(sessions.id, id) })
 }
 
 export function updateSession(
+	db: DbClient,
 	id: string,
 	data: Partial<Pick<NewSession, 'name' | 'questCompleted' | 'archetype'>>
 ) {
-	return db()
+	return db
 		.update(sessions)
 		.set({ ...data, updatedAt: new Date().toISOString() })
 		.where(eq(sessions.id, id))
 		.returning()
-		.get();
+		.get()
 }
 
 /**
  * Atomically mark quest as completed. Returns the updated session if this caller
  * won the race (quest_completed was false), or null if another request already completed it.
  */
-export function tryCompleteQuest(id: string, archetype: string) {
-	return db()
+export function tryCompleteQuest(db: DbClient, id: string, archetype: string) {
+	return db
 		.update(sessions)
 		.set({ questCompleted: true, archetype, updatedAt: new Date().toISOString() })
 		.where(and(eq(sessions.id, id), eq(sessions.questCompleted, false)))
 		.returning()
-		.get();
+		.get()
 }
 
 // --- Quest Choices ---
 
 export function saveQuestChoice(
+	db: DbClient,
 	sessionId: string,
 	step: number,
 	optionA: string,
@@ -59,7 +56,7 @@ export function saveQuestChoice(
 	selected: 'a' | 'b',
 	tags: string[]
 ) {
-	return db()
+	return db
 		.insert(questChoices)
 		.values({
 			sessionId,
@@ -70,89 +67,93 @@ export function saveQuestChoice(
 			tags: JSON.stringify(tags)
 		})
 		.returning()
-		.get();
+		.get()
 }
 
-export function getQuestChoices(sessionId: string) {
-	return db()
+export function getQuestChoices(db: DbClient, sessionId: string) {
+	return db
 		.select()
 		.from(questChoices)
 		.where(eq(questChoices.sessionId, sessionId))
 		.orderBy(asc(questChoices.step))
-		.all();
+		.all()
 }
 
 // --- Spaces ---
 
-export function createSpace(data: NewSpace) {
-	return db().insert(spaces).values(data).returning().get();
+export function createSpace(db: DbClient, data: NewSpace) {
+	return db.insert(spaces).values(data).returning().get()
 }
 
-export function getSpace(id: string) {
-	return db().query.spaces.findFirst({ where: eq(spaces.id, id) });
+export function getSpace(db: DbClient, id: string) {
+	return db.query.spaces.findFirst({ where: eq(spaces.id, id) })
 }
 
-export function getSessionSpaces(sessionId: string) {
-	return db()
+export function getSessionSpaces(db: DbClient, sessionId: string) {
+	return db
 		.select()
 		.from(spaces)
 		.where(eq(spaces.sessionId, sessionId))
 		.orderBy(asc(spaces.sortOrder))
-		.all();
+		.all()
 }
 
 export function updateSpace(
+	db: DbClient,
 	id: string,
 	data: Partial<
 		Pick<NewSpace, 'currentImageUrl' | 'editCount' | 'status' | 'activeNodeId' | 'name'>
 	>
 ) {
-	return db()
+	return db
 		.update(spaces)
 		.set({ ...data, updatedAt: new Date().toISOString() })
 		.where(eq(spaces.id, id))
 		.returning()
-		.get();
+		.get()
 }
 
-export function getCompletedSpaces(sessionId: string) {
-	return db()
+export function getCompletedSpaces(db: DbClient, sessionId: string) {
+	return db
 		.select()
 		.from(spaces)
 		.where(and(eq(spaces.sessionId, sessionId), eq(spaces.status, 'complete')))
 		.orderBy(asc(spaces.sortOrder))
-		.all();
+		.all()
 }
 
-export function getAllCompletedSpaces() {
-	return db().select().from(spaces).where(eq(spaces.status, 'complete')).all();
+export function getAllCompletedSpaces(db: DbClient) {
+	return db.select().from(spaces).where(eq(spaces.status, 'complete')).all()
 }
 
-export async function reorderSpaces(sessionId: string, order: { id: string; sortOrder: number }[]) {
-	const d = db();
+export async function reorderSpaces(
+	db: DbClient,
+	sessionId: string,
+	order: { id: string; sortOrder: number }[]
+) {
 	for (const item of order) {
-		await d
+		await db
 			.update(spaces)
 			.set({ sortOrder: item.sortOrder, updatedAt: new Date().toISOString() })
 			.where(and(eq(spaces.id, item.id), eq(spaces.sessionId, sessionId)))
-			.run();
+			.run()
 	}
 }
 
 // --- Edit History (Forge) ---
 
 export async function addEditNode(
+	db: DbClient,
 	spaceId: string,
 	parentNodeId: string | null,
 	newImageUrl: string,
 	prompt: string
 ) {
-	const d = db();
-	const nodeId = crypto.randomUUID();
+	const nodeId = crypto.randomUUID()
 
 	// 1. Insert edit node first (orphaned nodes are harmless; a space pointing to
 	//    a non-existent node is not). Step is set to 0 temporarily.
-	const node = await d
+	const node = await db
 		.insert(editHistory)
 		.values({
 			id: nodeId,
@@ -163,11 +164,11 @@ export async function addEditNode(
 			prompt
 		})
 		.returning()
-		.get();
+		.get()
 
 	// 2. Try to update the space — the WHERE guard enforces the edit limit atomically.
 	try {
-		const space = await d
+		const space = await db
 			.update(spaces)
 			.set({
 				currentImageUrl: newImageUrl,
@@ -178,87 +179,85 @@ export async function addEditNode(
 			})
 			.where(and(eq(spaces.id, spaceId), lt(spaces.editCount, MAX_EDITS_PER_SPACE)))
 			.returning()
-			.get();
+			.get()
 
 		if (!space) {
 			// Rollback: delete the orphaned node
-			await d.delete(editHistory).where(eq(editHistory.id, nodeId)).run();
+			await db.delete(editHistory).where(eq(editHistory.id, nodeId)).run()
 			// Check why it failed
-			const existing = await d.query.spaces.findFirst({ where: eq(spaces.id, spaceId) });
-			if (!existing) throw new Error(`Space not found: ${spaceId}`);
-			throw new Error(`Edit limit reached (${MAX_EDITS_PER_SPACE} max)`);
+			const existing = await db.query.spaces.findFirst({ where: eq(spaces.id, spaceId) })
+			if (!existing) throw new Error(`Space not found: ${spaceId}`)
+			throw new Error(`Edit limit reached (${MAX_EDITS_PER_SPACE} max)`)
 		}
 
 		// 3. Now set the correct step on the node (matches the incremented editCount).
-		const [updatedNode] = await d
+		const [updatedNode] = await db
 			.update(editHistory)
 			.set({ step: space.editCount })
 			.where(eq(editHistory.id, nodeId))
-			.returning();
+			.returning()
 
-		return { space, node: updatedNode ?? node };
+		return { space, node: updatedNode ?? node }
 	} catch (e) {
 		// If it's our own thrown error, rethrow as-is
 		if (
 			e instanceof Error &&
 			(e.message.includes('Edit limit') || e.message.includes('Space not found'))
 		) {
-			throw e;
+			throw e
 		}
 		// Rollback orphaned node on unexpected error
-		await d
+		await db
 			.delete(editHistory)
 			.where(eq(editHistory.id, nodeId))
 			.run()
 			.catch((rollbackErr) => {
-				console.error('Failed to rollback orphaned edit node', nodeId, rollbackErr);
-			});
-		throw e;
+				console.error('Failed to rollback orphaned edit node', nodeId, rollbackErr)
+			})
+		throw e
 	}
 }
 
-export function getEditHistory(spaceId: string) {
-	return db()
+export function getEditHistory(db: DbClient, spaceId: string) {
+	return db
 		.select()
 		.from(editHistory)
 		.where(eq(editHistory.spaceId, spaceId))
 		.orderBy(asc(editHistory.step))
-		.all();
+		.all()
 }
 
-export async function deleteEditNode(spaceId: string, nodeId: string) {
-	const d = db();
-
+export async function deleteEditNode(db: DbClient, spaceId: string, nodeId: string) {
 	// 1. Validate preconditions (parallel reads)
 	const [children, node, sp] = await Promise.all([
-		d.select().from(editHistory).where(eq(editHistory.parentId, nodeId)).all(),
-		d.select().from(editHistory).where(eq(editHistory.id, nodeId)).get(),
-		d.select().from(spaces).where(eq(spaces.id, spaceId)).get()
-	]);
+		db.select().from(editHistory).where(eq(editHistory.parentId, nodeId)).all(),
+		db.select().from(editHistory).where(eq(editHistory.id, nodeId)).get(),
+		db.select().from(spaces).where(eq(spaces.id, spaceId)).get()
+	])
 
-	if (children.length > 0) throw new Error('Cannot delete a node with children');
-	if (!node) throw new Error('Edit node not found');
-	if (!sp) throw new Error('Space not found');
+	if (children.length > 0) throw new Error('Cannot delete a node with children')
+	if (!node) throw new Error('Edit node not found')
+	if (!sp) throw new Error('Space not found')
 
-	const newActiveNodeId = sp.activeNodeId === nodeId ? (node.parentId ?? null) : sp.activeNodeId;
+	const newActiveNodeId = sp.activeNodeId === nodeId ? (node.parentId ?? null) : sp.activeNodeId
 
-	let newImageUrl = sp.originalImageUrl;
+	let newImageUrl = sp.originalImageUrl
 	if (newActiveNodeId) {
-		const activeNode = await d
+		const activeNode = await db
 			.select()
 			.from(editHistory)
 			.where(eq(editHistory.id, newActiveNodeId))
-			.get();
-		if (activeNode) newImageUrl = activeNode.imageUrl;
+			.get()
+		if (activeNode) newImageUrl = activeNode.imageUrl
 	}
 
 	// 2. Delete the node first (a missing history node is less harmful than a
 	//    space pointing to a non-existent node)
-	await d.delete(editHistory).where(eq(editHistory.id, nodeId)).run();
+	await db.delete(editHistory).where(eq(editHistory.id, nodeId)).run()
 
 	// 3. Update the space — if this fails, re-insert the deleted node to restore consistency
 	try {
-		const space = await d
+		const space = await db
 			.update(spaces)
 			.set({
 				activeNodeId: newActiveNodeId,
@@ -268,12 +267,12 @@ export async function deleteEditNode(spaceId: string, nodeId: string) {
 			})
 			.where(eq(spaces.id, spaceId))
 			.returning()
-			.get();
+			.get()
 
-		return space;
+		return space
 	} catch (e) {
 		// Rollback: re-insert the deleted node
-		await d
+		await db
 			.insert(editHistory)
 			.values({
 				id: node.id,
@@ -285,16 +284,16 @@ export async function deleteEditNode(spaceId: string, nodeId: string) {
 			})
 			.run()
 			.catch((rollbackErr) => {
-				console.error('Failed to rollback deleted edit node', node.id, rollbackErr);
-			});
-		throw e;
+				console.error('Failed to rollback deleted edit node', node.id, rollbackErr)
+			})
+		throw e
 	}
 }
 
 // --- Seed Content ---
 
-export function createSeedSession(archetype: string) {
-	return db()
+export function createSeedSession(db: DbClient, archetype: string) {
+	return db
 		.insert(sessions)
 		.values({
 			name: 'Seed Explorer',
@@ -303,9 +302,9 @@ export function createSeedSession(archetype: string) {
 			isSeed: true
 		})
 		.returning()
-		.get();
+		.get()
 }
 
-export function getSeedSessions() {
-	return db().select().from(sessions).where(eq(sessions.isSeed, true)).all();
+export function getSeedSessions(db: DbClient) {
+	return db.select().from(sessions).where(eq(sessions.isSeed, true)).all()
 }
