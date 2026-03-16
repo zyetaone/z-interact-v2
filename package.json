@@ -1,10 +1,16 @@
 {
 	"name": "workspace-studio-v2",
 	"private": true,
-	"workspaces": ["packages/*", "apps/*"],
+	"workspaces": [
+		"packages/*",
+		"apps/*"
+	],
 	"scripts": {
 		"dev": "bun run --filter @zyeta/quest dev",
 		"dev:showcase": "bun run --filter @zyeta/showcase dev",
+		"dev:editor": "bun run --filter @zyeta/showcase dev -- --open /editor",
+		"dev:world": "bun run --filter @zyeta/showcase dev -- --open /world",
+		"dev:video": "bun run --filter @zyeta/showcase dev -- --open /video",
 		"build": "bun run --filter './apps/*' build",
 		"check": "bun run --filter './apps/*' check",
 		"test": "vitest run",

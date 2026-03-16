@@ -1,96 +1,96 @@
 <script lang="ts">
-	import { Film, Play, Upload, Loader2, Check, X, ChevronLeft, ChevronRight } from '@lucide/svelte'
-	import { SvelteSet } from 'svelte/reactivity'
+	import { Film, Play, Upload, Loader2, Check, X, ChevronLeft, ChevronRight } from '@lucide/svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface ImageItem {
-		id: string
-		url: string
-		name: string
+		id: string;
+		url: string;
+		name: string;
 	}
 
 	interface Props {
-		images: ImageItem[]
-		ongenerate?: (selectedImages: ImageItem[]) => void
-		class?: string
+		images: ImageItem[];
+		ongenerate?: (selectedImages: ImageItem[]) => void;
+		class?: string;
 	}
 
-	let { images, ongenerate, class: className = '' }: Props = $props()
+	let { images, ongenerate, class: className = '' }: Props = $props();
 
 	// Selection state — SvelteSet is inherently reactive, no $state wrapper needed
-	let selectedIds = new SvelteSet<string>()
-	let isGenerating = $state(false)
-	let generatedVideoUrl = $state<string | null>(null)
-	let activeFilmFrame = $state(0)
-	let errorMessage = $state('')
+	let selectedIds = new SvelteSet<string>();
+	let isGenerating = $state(false);
+	let generatedVideoUrl = $state<string | null>(null);
+	let activeFilmFrame = $state(0);
+	let errorMessage = $state('');
 
 	// Derived
-	const selectedImages = $derived(images.filter((img) => selectedIds.has(img.id)))
-	const hasSelection = $derived(selectedIds.size > 0)
-	const allSelected = $derived(selectedIds.size === images.length && images.length > 0)
-	const canGenerate = $derived(hasSelection && !isGenerating)
+	const selectedImages = $derived(images.filter((img) => selectedIds.has(img.id)));
+	const hasSelection = $derived(selectedIds.size > 0);
+	const allSelected = $derived(selectedIds.size === images.length && images.length > 0);
+	const canGenerate = $derived(hasSelection && !isGenerating);
 
 	function toggleSelect(id: string) {
 		if (selectedIds.has(id)) {
-			selectedIds.delete(id)
+			selectedIds.delete(id);
 		} else {
-			selectedIds.add(id)
+			selectedIds.add(id);
 		}
 	}
 
 	function toggleSelectAll() {
 		if (allSelected) {
-			selectedIds.clear()
+			selectedIds.clear();
 		} else {
-			selectedIds.clear()
-			images.forEach((img) => selectedIds.add(img.id))
+			selectedIds.clear();
+			images.forEach((img) => selectedIds.add(img.id));
 		}
 	}
 
 	function clearSelection() {
-		selectedIds.clear()
+		selectedIds.clear();
 	}
 
 	async function handleGenerate() {
-		if (!canGenerate) return
-		errorMessage = ''
-		isGenerating = true
+		if (!canGenerate) return;
+		errorMessage = '';
+		isGenerating = true;
 
 		try {
 			if (ongenerate) {
-				ongenerate(selectedImages)
+				ongenerate(selectedImages);
 			}
 		} catch (e) {
-			errorMessage = e instanceof Error ? e.message : 'Failed to start generation'
+			errorMessage = e instanceof Error ? e.message : 'Failed to start generation';
 		}
 		// isGenerating stays true until consumer resolves (they call setVideo or reset)
 	}
 
 	// Public API for consumer to resolve the generating state
 	export function setGeneratedVideo(url: string) {
-		generatedVideoUrl = url
-		isGenerating = false
-		activeFilmFrame = 0
+		generatedVideoUrl = url;
+		isGenerating = false;
+		activeFilmFrame = 0;
 	}
 
 	export function setError(message: string) {
-		errorMessage = message
-		isGenerating = false
+		errorMessage = message;
+		isGenerating = false;
 	}
 
 	export function reset() {
-		generatedVideoUrl = null
-		isGenerating = false
-		selectedIds.clear()
-		errorMessage = ''
-		activeFilmFrame = 0
+		generatedVideoUrl = null;
+		isGenerating = false;
+		selectedIds.clear();
+		errorMessage = '';
+		activeFilmFrame = 0;
 	}
 
 	function prevFrame() {
-		if (activeFilmFrame > 0) activeFilmFrame--
+		if (activeFilmFrame > 0) activeFilmFrame--;
 	}
 
 	function nextFrame() {
-		if (activeFilmFrame < selectedImages.length - 1) activeFilmFrame++
+		if (activeFilmFrame < selectedImages.length - 1) activeFilmFrame++;
 	}
 </script>
 
@@ -132,7 +132,7 @@
 		<div class="flex flex-col gap-3">
 			<!-- Select All -->
 			<div class="flex items-center justify-between">
-				<span class="text-xs font-medium text-slate-400 uppercase tracking-wide">Storyboard</span>
+				<span class="text-xs font-medium tracking-wide text-slate-400 uppercase">Storyboard</span>
 				<button
 					onclick={toggleSelectAll}
 					class="text-xs text-amber-400 transition-colors hover:text-amber-300"
@@ -280,7 +280,7 @@
 						>
 							<img src={img.url} alt={img.name} class="h-14 w-14 object-cover" />
 							<div
-								class="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5 text-center font-mono text-[8px] text-white/60"
+								class="absolute right-0 bottom-0 left-0 bg-black/60 px-1 py-0.5 text-center font-mono text-[8px] text-white/60"
 							>
 								{i + 1}
 							</div>
@@ -300,10 +300,7 @@
 					<Film class="h-4 w-4 text-amber-400" />
 					<span class="text-sm font-medium text-white">Generated Video</span>
 				</div>
-				<button
-					onclick={reset}
-					class="text-xs text-slate-400 transition-colors hover:text-white"
-				>
+				<button onclick={reset} class="text-xs text-slate-400 transition-colors hover:text-white">
 					Start over
 				</button>
 			</div>
@@ -362,7 +359,7 @@
 							>
 								<img src={img.url} alt={img.name} class="h-14 w-14 object-cover" />
 								<div
-									class="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5 text-center font-mono text-[8px] text-white/60"
+									class="absolute right-0 bottom-0 left-0 bg-black/60 px-1 py-0.5 text-center font-mono text-[8px] text-white/60"
 								>
 									{i + 1}
 								</div>
@@ -372,7 +369,9 @@
 
 					<!-- Active frame preview -->
 					{#if selectedImages[activeFilmFrame]}
-						<div class="flex items-center gap-3 rounded-lg border border-white/5 bg-white/[0.02] p-2">
+						<div
+							class="flex items-center gap-3 rounded-lg border border-white/5 bg-white/[0.02] p-2"
+						>
 							<img
 								src={selectedImages[activeFilmFrame].url}
 								alt={selectedImages[activeFilmFrame].name}

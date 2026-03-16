@@ -3,19 +3,7 @@
 	import { Canvas } from '@threlte/core';
 	import { WebGLRenderer, PCFShadowMap, ACESFilmicToneMapping } from 'three';
 	import Scene from './scene/Scene.svelte';
-
-	export interface IslandModel {
-		id: string;
-		name: string;
-		imageUrl: string;
-		editCount: number;
-		sortOrder?: number;
-	}
-
-	export interface SceneControls {
-		resetView: () => void;
-		toggleAvatar: () => boolean;
-	}
+	import type { IslandModel, SceneControls } from './types';
 
 	let {
 		models = [],

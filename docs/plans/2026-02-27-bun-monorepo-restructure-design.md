@@ -107,17 +107,17 @@ apps/showcase          → @zyeta/shared, @zyeta/editor-engine, @zyeta/world-eng
 
 ```json
 {
-  "name": "workspace-studio-v2",
-  "private": true,
-  "workspaces": ["packages/*", "apps/*"],
-  "scripts": {
-    "dev": "bun run --filter apps/quest dev",
-    "dev:showcase": "bun run --filter apps/showcase dev",
-    "build": "bun run --filter apps/* build",
-    "check": "bun run --filter '*' check",
-    "test": "bun run --filter '*' test",
-    "lint": "bun run --filter '*' lint"
-  }
+	"name": "workspace-studio-v2",
+	"private": true,
+	"workspaces": ["packages/*", "apps/*"],
+	"scripts": {
+		"dev": "bun run --filter apps/quest dev",
+		"dev:showcase": "bun run --filter apps/showcase dev",
+		"build": "bun run --filter apps/* build",
+		"check": "bun run --filter '*' check",
+		"test": "bun run --filter '*' test",
+		"lint": "bun run --filter '*' lint"
+	}
 }
 ```
 
@@ -126,16 +126,18 @@ apps/showcase          → @zyeta/shared, @zyeta/editor-engine, @zyeta/world-eng
 SvelteKit's `$lib/server` auto-treeshaking doesn't apply to external packages. For server-only code in packages:
 
 1. **Subpath exports** in package.json:
+
    ```json
    {
-     "exports": {
-       ".": "./src/index.ts",
-       "./server": "./src/server/index.ts"
-     }
+   	"exports": {
+   		".": "./src/index.ts",
+   		"./server": "./src/server/index.ts"
+   	}
    }
    ```
 
 2. **Consuming apps import server code explicitly:**
+
    ```ts
    // In forge/ai.remote.ts
    import { createImageEditor } from '@zyeta/editor-engine/server';
@@ -152,6 +154,7 @@ The `@zyeta/shared` DB layer accepts `platform.env` as a parameter — the consu
 ### Migration Path
 
 The restructure is a move operation, not a rewrite:
+
 1. Create workspace structure (root package.json, directories)
 2. Move files from `src/lib/` into appropriate packages
 3. Move routes into `apps/quest/src/routes/`
@@ -161,21 +164,21 @@ The restructure is a move operation, not a rewrite:
 
 ### What Stays in Each App vs Package
 
-| Code | Location | Reason |
-|------|----------|--------|
-| DB schema + queries | `@zyeta/shared` | All apps need DB access |
-| Types (MaskData, Version) | `@zyeta/shared` | All engines use these |
-| Config (quest, archetypes) | `@zyeta/shared` | Quest app + showcase need these |
-| Toast, Modal components | `@zyeta/shared` | Generic UI used everywhere |
-| Editor class + components | `@zyeta/editor-engine` | The "Photoshop" engine |
-| AI factory + fal adapters | `@zyeta/editor-engine` | Coupled to editor operations |
-| Storage (R2 persist) | `@zyeta/editor-engine` | Image persistence for edits |
-| Scene components | `@zyeta/world-engine` | Three.js 3D rendering |
-| Video generation UI | `@zyeta/video-engine` | Image-to-video pipeline |
-| QuestEngine class | `apps/quest` | App-specific state |
-| toast.svelte.ts | `apps/quest` | App-level notification |
-| Route handlers | `apps/quest` | App-specific wiring |
-| API routes | `apps/quest` | App-specific endpoints |
+| Code                       | Location               | Reason                          |
+| -------------------------- | ---------------------- | ------------------------------- |
+| DB schema + queries        | `@zyeta/shared`        | All apps need DB access         |
+| Types (MaskData, Version)  | `@zyeta/shared`        | All engines use these           |
+| Config (quest, archetypes) | `@zyeta/shared`        | Quest app + showcase need these |
+| Toast, Modal components    | `@zyeta/shared`        | Generic UI used everywhere      |
+| Editor class + components  | `@zyeta/editor-engine` | The "Photoshop" engine          |
+| AI factory + fal adapters  | `@zyeta/editor-engine` | Coupled to editor operations    |
+| Storage (R2 persist)       | `@zyeta/editor-engine` | Image persistence for edits     |
+| Scene components           | `@zyeta/world-engine`  | Three.js 3D rendering           |
+| Video generation UI        | `@zyeta/video-engine`  | Image-to-video pipeline         |
+| QuestEngine class          | `apps/quest`           | App-specific state              |
+| toast.svelte.ts            | `apps/quest`           | App-level notification          |
+| Route handlers             | `apps/quest`           | App-specific wiring             |
+| API routes                 | `apps/quest`           | App-specific endpoints          |
 
 ## Non-Goals
 

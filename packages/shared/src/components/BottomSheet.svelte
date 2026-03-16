@@ -205,7 +205,7 @@
 			onpointercancel={handlePointerUp}
 			onkeydown={handleKeydown}
 		>
-			<div class="h-1 w-10 rounded-full bg-white/30"></div>
+			<div class="h-1.5 w-12 rounded-full bg-white/40"></div>
 		</div>
 
 		<!-- Content -->

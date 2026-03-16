@@ -1,10 +1,12 @@
 <script lang="ts">
-	import { T, useTask, useThrelte } from '@threlte/core';
-	import { OrbitControls, interactivity } from '@threlte/extras';
-	import { Vector3, Color, FogExp2 } from 'three';
+	import { T, useThrelte } from '@threlte/core';
+	import { Stars, ContactShadows, interactivity } from '@threlte/extras';
+	import { FogExp2 } from 'three';
+	import type { Vector3 } from 'three';
 	import RoomModel from './RoomModel.svelte';
+	import CameraController from './CameraController.svelte';
 	import Avatar from './Avatar.svelte';
-	import type { IslandModel, SceneControls } from '../IsometricScene.svelte';
+	import type { IslandModel, SceneControls, ViewMode } from '../types';
 
 	let {
 		models = [],
@@ -20,9 +22,9 @@
 
 	interactivity();
 
-	const { camera, scene } = useThrelte();
-	scene.background = new Color(0x0a0e1a);
-	scene.fog = new FogExp2(0x0a0e1a, 0.015);
+	const { scene } = useThrelte();
+	scene.background = null;
+	scene.fog = new FogExp2(0x05030e, 0.015);
 
 	// Grid layout
 	const slotCount = $derived(Math.max(totalSlots ?? models.length, models.length));
@@ -83,158 +85,44 @@
 		return result;
 	});
 
-	// Camera tween state
+	// Camera state — owned by CameraController, bound here for scene use
+	let viewMode = $state<ViewMode>('overview');
 	let selectedRoom = $state<IslandModel | null>(null);
 	let isTransitioning = $state(false);
 	let avatarEnabled = $state(false);
+	let glbBounds = $state<Map<string, { center: Vector3; radius: number }>>(new Map());
+	let navigate = $state<(pos: [number, number, number], room: IslandModel) => void>(() => {});
 
-	let tween = $state<{
-		fromPos: Vector3;
-		toPos: Vector3;
-		fromTarget: Vector3;
-		toTarget: Vector3;
-		duration: number;
-		elapsed: number;
-		onComplete: () => void;
-	} | null>(null);
-
-	// OrbitControls ref for target manipulation
-	let orbitRef = $state<import('three/addons/controls/OrbitControls.js').OrbitControls | null>(
-		null
-	);
-
-	useTask((delta) => {
-		if (!tween || !orbitRef) return;
-
-		tween.elapsed += delta * 1000; // delta is in seconds, duration in ms
-		const t = Math.min(tween.elapsed / tween.duration, 1);
-		const ease = 1 - Math.pow(1 - t, 3);
-
-		camera.current.position.lerpVectors(tween.fromPos, tween.toPos, ease);
-		orbitRef.target.lerpVectors(tween.fromTarget, tween.toTarget, ease);
-		orbitRef.update();
-
-		if (t >= 1) {
-			const cb = tween.onComplete;
-			tween = null;
-			cb();
-		}
-	});
-
-	function tweenTo(pos: [number, number, number], room: IslandModel) {
-		if (isTransitioning || !orbitRef) return;
-		selectedRoom = room;
-		isTransitioning = true;
-		onroomselect?.(room);
-
-		tween = {
-			fromPos: camera.current.position.clone(),
-			toPos: new Vector3(pos[0] + 10, 10, pos[2] + 10),
-			fromTarget: orbitRef.target.clone(),
-			toTarget: new Vector3(pos[0], 1.5, pos[2]),
-			duration: 900,
-			elapsed: 0,
-			onComplete: () => {
-				isTransitioning = false;
-			}
-		};
-	}
-
-	function doResetView() {
-		if (!orbitRef) return;
-		selectedRoom = null;
-		isTransitioning = true;
-		onroomselect?.(null);
-
-		tween = {
-			fromPos: camera.current.position.clone(),
-			toPos: new Vector3(30, 30, 30),
-			fromTarget: orbitRef.target.clone(),
-			toTarget: new Vector3(0, 0, 0),
-			duration: 700,
-			elapsed: 0,
-			onComplete: () => {
-				isTransitioning = false;
-			}
-		};
-	}
-
-	// Keyboard navigation
-	function onKeyDown(e: KeyboardEvent) {
-		if (e.key === 'Escape' && selectedRoom) {
-			doResetView();
-			return;
-		}
-
-		if (!selectedRoom) return;
-		if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
-
-		e.preventDefault();
-		const idx = models.findIndex((m) => m.id === selectedRoom!.id);
-		let next = idx;
-
-		if (e.key === 'ArrowRight') next = (idx + 1) % models.length;
-		else if (e.key === 'ArrowLeft') next = (idx - 1 + models.length) % models.length;
-		else if (e.key === 'ArrowDown') next = Math.min(idx + cols, models.length - 1);
-		else if (e.key === 'ArrowUp') next = Math.max(idx - cols, 0);
-
-		if (next !== idx) {
-			const room = models[next];
-			const pos = islandPositions.get(room.id);
-			if (pos) tweenTo(pos, room);
-		}
-	}
-
-	// Expose controls
-	controls = {
-		resetView: doResetView,
-		toggleAvatar() {
-			avatarEnabled = !avatarEnabled;
-			return avatarEnabled;
-		}
-	};
+	// Which island is currently dived into (freezes its float animation)
+	const divedRoomId = $derived(viewMode === 'dived' ? selectedRoom?.id : null);
 </script>
 
-<svelte:window onkeydown={onKeyDown} />
+<!-- Camera controller — manages ortho/perspective cameras, orbit controls, tweens, keyboard nav -->
+<CameraController
+	{models}
+	{islandPositions}
+	{cols}
+	{onroomselect}
+	bind:selectedRoom
+	bind:viewMode
+	bind:isTransitioning
+	bind:glbBounds
+	bind:controls
+	bind:avatarEnabled
+	bind:navigate
+/>
 
-<!-- Isometric camera -->
-<T.OrthographicCamera
-	position={[30, 30, 30]}
-	zoom={1}
-	near={0.1}
-	far={200}
-	oncreate={(ref) => {
-		const aspect = window.innerWidth / window.innerHeight;
-		const frustumSize = 24;
-		ref.left = (-frustumSize * aspect) / 2;
-		ref.right = (frustumSize * aspect) / 2;
-		ref.top = frustumSize / 2;
-		ref.bottom = -frustumSize / 2;
-		ref.updateProjectionMatrix();
-		ref.lookAt(0, 0, 0);
-		// Set as the default camera for the scene
-		camera.set(ref);
-	}}
->
-	<OrbitControls
-		oncreate={(ref) => {
-			orbitRef = ref;
-		}}
-		enableDamping
-		dampingFactor={0.06}
-		maxPolarAngle={Math.PI / 2.5}
-		minZoom={0.5}
-		maxZoom={3}
-		enablePan
-	/>
-</T.OrthographicCamera>
+<!-- Starfield background -->
+<Stars count={1500} radius={80} depth={60} factor={5}
+	saturation={0.3} lightness={0.7} speed={0.3} fade opacity={0.9} />
 
 <!-- Lights -->
-<T.AmbientLight color={0xc8d0ff} intensity={0.5} />
+<T.HemisphereLight args={[0xc8d0ff, 0x1a0a2e, 0.6]} />
 
 <T.DirectionalLight
-	position={[15, 25, 10]}
-	intensity={1.0}
+	position={[12, 30, 8]}
+	color={0xffeedd}
+	intensity={1.2}
 	castShadow
 	shadow.mapSize.width={2048}
 	shadow.mapSize.height={2048}
@@ -246,27 +134,33 @@
 	shadow.camera.bottom={-30}
 />
 
-<T.DirectionalLight position={[-10, 10, -10]} color={0x8080ff} intensity={0.3} />
+<!-- Purple rim light — outlines islands against starfield -->
+<T.DirectionalLight position={[-8, 5, -12]} color={0x6b3fa0} intensity={0.4} />
 
-<!-- Ground (void below islands) -->
-<T.Mesh rotation.x={-Math.PI / 2} position.y={-3} receiveShadow>
-	<T.PlaneGeometry args={[120, 120]} />
-	<T.MeshStandardMaterial color={0x060a12} roughness={0.95} metalness={0} />
-</T.Mesh>
-
-<!-- Grid (subtle, below islands) -->
-<T.GridHelper args={[80, 80, 0x1a1f36, 0x111827]} position.y={-2.99} />
+<!-- Contact shadows beneath floating islands -->
+<ContactShadows position.y={-2} opacity={0.4} scale={80}
+	blur={2.5} far={6} resolution={256}
+	color={0x0a0a2e} frames={2} />
 
 <!-- Floating island models -->
 {#each models as model, i (model.id)}
 	{@const pos = gridPosition(i)}
 	<RoomModel
 		imageUrl={model.imageUrl}
+		modelUrl={model.modelUrl}
 		name={model.name}
 		position={pos}
 		index={i}
+		selected={selectedRoom?.id === model.id}
+		pauseFloat={divedRoomId === model.id}
+		onglbload={(bounds) => {
+			glbBounds.set(model.id, bounds);
+			glbBounds = glbBounds;
+		}}
 		onclick={() => {
-			if (!isTransitioning) tweenTo(pos, model);
+			if (!isTransitioning) {
+				navigate(pos, model);
+			}
 		}}
 	/>
 {/each}

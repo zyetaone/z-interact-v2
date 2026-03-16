@@ -4,20 +4,19 @@
 	"version": "0.0.1",
 	"type": "module",
 	"exports": {
+		".": "./src/index.ts",
 		"./db": "./src/db/index.ts",
 		"./db/schema": "./src/db/schema.ts",
 		"./db/queries": "./src/db/queries.ts",
 		"./types": "./src/types/workspace.ts",
 		"./config/quest": "./src/config/quest.ts",
 		"./config/archetypes": "./src/config/archetypes.ts",
-		"./config/assets": "./src/config/assets.ts",
 		"./utils/*": "./src/utils/*.ts",
 		"./components/*": "./src/components/*.svelte"
 	},
 	"dependencies": {
 		"drizzle-orm": "^0.45.1",
-		"@lucide/svelte": "^0.563.1",
-		"valibot": "^1.2.0"
+		"@lucide/svelte": "^0.563.1"
 	},
 	"devDependencies": {
 		"@libsql/client": "^0.17.0"

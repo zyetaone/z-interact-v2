@@ -3,13 +3,17 @@
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
+	"scripts": {
+		"dev": "cd ../../ && bun run dev:world"
+	},
 	"exports": {
 		".": "./src/index.ts",
 		"./scene/*": "./src/scene/*.svelte",
-		"./IsometricScene": "./src/IsometricScene.svelte"
+		"./building/*": "./src/building/*.svelte",
+		"./IsometricScene": "./src/IsometricScene.svelte",
+		"./OfficeTower": "./src/OfficeTower.svelte"
 	},
 	"dependencies": {
-		"@zyeta/shared": "workspace:*",
 		"@threlte/core": "^8.4.0",
 		"@threlte/extras": "^9.8.1",
 		"three": "^0.183.1"

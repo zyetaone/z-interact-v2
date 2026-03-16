@@ -1,8 +1,8 @@
 <script>
-	import './layout.css'
-	let { children } = $props()
+	import './layout.css';
+	let { children } = $props();
 </script>
 
-<main class="min-h-screen bg-slate-950 text-slate-100">
+<main class="min-h-screen text-slate-100">
 	{@render children()}
 </main>
