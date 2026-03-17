@@ -1,1 +1,1 @@
-export { default as VideoStudio } from './VideoStudio.svelte'
+export { default as VideoStudio } from './VideoStudio.svelte';

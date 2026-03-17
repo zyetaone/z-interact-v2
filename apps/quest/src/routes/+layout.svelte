@@ -1,7 +1,7 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import Toast from '$lib/components/Toast.svelte';
+	import Toast from '@zyeta/shared/components/Toast';
 
 	let { children } = $props();
 </script>

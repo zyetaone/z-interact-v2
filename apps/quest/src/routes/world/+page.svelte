@@ -3,11 +3,8 @@
 	import { browser } from '$app/environment';
 	import { fade, scale, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
-	import { toast } from '$lib/toast.svelte';
-	import IsometricScene, {
-		type IslandModel,
-		type SceneControls
-	} from '@zyeta/world-engine/IsometricScene';
+	import { toast } from '@zyeta/shared/utils/toast.svelte';
+	import { IsometricScene, type IslandModel, type SceneControls } from '@zyeta/world-engine';
 	import {
 		Globe,
 		ChevronLeft,

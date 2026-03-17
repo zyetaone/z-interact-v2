@@ -28,3 +28,11 @@ export interface SegmentResult {
 export interface ImageSegmenter {
 	segment(request: SegmentRequest): Promise<SegmentResult>;
 }
+
+export interface ModelGenerateResult {
+	modelUrl: string;
+}
+
+export interface ModelGenerator {
+	generate(imageUrl: string): Promise<ModelGenerateResult>;
+}

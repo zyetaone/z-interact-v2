@@ -53,6 +53,7 @@ export const spaces = sqliteTable(
 			.default('quest'),
 		editCount: integer('edit_count').notNull().default(0),
 		activeNodeId: text('active_node_id'),
+		modelUrl: text('model_url'),
 		sortOrder: integer('sort_order').notNull().default(0),
 		createdAt: text('created_at')
 			.notNull()
@@ -88,7 +89,5 @@ export const editHistory = sqliteTable(
 
 export type Session = typeof sessions.$inferSelect;
 export type NewSession = typeof sessions.$inferInsert;
-export type QuestChoice = typeof questChoices.$inferSelect;
 export type Space = typeof spaces.$inferSelect;
 export type NewSpace = typeof spaces.$inferInsert;
-export type EditHistoryEntry = typeof editHistory.$inferSelect;

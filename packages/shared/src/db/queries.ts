@@ -1,9 +1,9 @@
-import { eq, and, lt, asc, sql } from 'drizzle-orm'
-import type { DbClient } from './index'
-import { sessions, questChoices, spaces, editHistory } from './schema'
-import type { NewSession, NewSpace } from './schema'
+import { eq, and, lt, asc, sql } from 'drizzle-orm';
+import type { DbClient } from './index';
+import { sessions, questChoices, spaces, editHistory } from './schema';
+import type { NewSession, NewSpace } from './schema';
 
-const MAX_EDITS_PER_SPACE = 20
+const MAX_EDITS_PER_SPACE = 20;
 
 // --- Sessions ---
 
@@ -12,11 +12,11 @@ export function createSession(db: DbClient, data?: Partial<NewSession>) {
 		.insert(sessions)
 		.values(data ?? {})
 		.returning()
-		.get()
+		.get();
 }
 
 export function getSession(db: DbClient, id: string) {
-	return db.query.sessions.findFirst({ where: eq(sessions.id, id) })
+	return db.query.sessions.findFirst({ where: eq(sessions.id, id) });
 }
 
 export function updateSession(
@@ -29,7 +29,7 @@ export function updateSession(
 		.set({ ...data, updatedAt: new Date().toISOString() })
 		.where(eq(sessions.id, id))
 		.returning()
-		.get()
+		.get();
 }
 
 /**
@@ -42,7 +42,7 @@ export function tryCompleteQuest(db: DbClient, id: string, archetype: string) {
 		.set({ questCompleted: true, archetype, updatedAt: new Date().toISOString() })
 		.where(and(eq(sessions.id, id), eq(sessions.questCompleted, false)))
 		.returning()
-		.get()
+		.get();
 }
 
 // --- Quest Choices ---
@@ -67,7 +67,7 @@ export function saveQuestChoice(
 			tags: JSON.stringify(tags)
 		})
 		.returning()
-		.get()
+		.get();
 }
 
 export function getQuestChoices(db: DbClient, sessionId: string) {
@@ -76,17 +76,17 @@ export function getQuestChoices(db: DbClient, sessionId: string) {
 		.from(questChoices)
 		.where(eq(questChoices.sessionId, sessionId))
 		.orderBy(asc(questChoices.step))
-		.all()
+		.all();
 }
 
 // --- Spaces ---
 
 export function createSpace(db: DbClient, data: NewSpace) {
-	return db.insert(spaces).values(data).returning().get()
+	return db.insert(spaces).values(data).returning().get();
 }
 
 export function getSpace(db: DbClient, id: string) {
-	return db.query.spaces.findFirst({ where: eq(spaces.id, id) })
+	return db.query.spaces.findFirst({ where: eq(spaces.id, id) });
 }
 
 export function getSessionSpaces(db: DbClient, sessionId: string) {
@@ -95,14 +95,17 @@ export function getSessionSpaces(db: DbClient, sessionId: string) {
 		.from(spaces)
 		.where(eq(spaces.sessionId, sessionId))
 		.orderBy(asc(spaces.sortOrder))
-		.all()
+		.all();
 }
 
 export function updateSpace(
 	db: DbClient,
 	id: string,
 	data: Partial<
-		Pick<NewSpace, 'currentImageUrl' | 'editCount' | 'status' | 'activeNodeId' | 'name'>
+		Pick<
+			NewSpace,
+			'currentImageUrl' | 'editCount' | 'status' | 'activeNodeId' | 'name' | 'modelUrl'
+		>
 	>
 ) {
 	return db
@@ -110,7 +113,20 @@ export function updateSpace(
 		.set({ ...data, updatedAt: new Date().toISOString() })
 		.where(eq(spaces.id, id))
 		.returning()
-		.get()
+		.get();
+}
+
+/**
+ * Atomically mark space as completed. Returns the updated space if this caller
+ * won the race (status was 'forging'), or null if already completed.
+ */
+export function tryCompleteSpace(db: DbClient, id: string) {
+	return db
+		.update(spaces)
+		.set({ status: 'complete', updatedAt: new Date().toISOString() })
+		.where(and(eq(spaces.id, id), eq(spaces.status, 'forging')))
+		.returning()
+		.get();
 }
 
 export function getCompletedSpaces(db: DbClient, sessionId: string) {
@@ -119,11 +135,11 @@ export function getCompletedSpaces(db: DbClient, sessionId: string) {
 		.from(spaces)
 		.where(and(eq(spaces.sessionId, sessionId), eq(spaces.status, 'complete')))
 		.orderBy(asc(spaces.sortOrder))
-		.all()
+		.all();
 }
 
 export function getAllCompletedSpaces(db: DbClient) {
-	return db.select().from(spaces).where(eq(spaces.status, 'complete')).all()
+	return db.select().from(spaces).where(eq(spaces.status, 'complete')).all();
 }
 
 export async function reorderSpaces(
@@ -136,7 +152,7 @@ export async function reorderSpaces(
 			.update(spaces)
 			.set({ sortOrder: item.sortOrder, updatedAt: new Date().toISOString() })
 			.where(and(eq(spaces.id, item.id), eq(spaces.sessionId, sessionId)))
-			.run()
+			.run();
 	}
 }
 
@@ -149,7 +165,7 @@ export async function addEditNode(
 	newImageUrl: string,
 	prompt: string
 ) {
-	const nodeId = crypto.randomUUID()
+	const nodeId = crypto.randomUUID();
 
 	// 1. Insert edit node first (orphaned nodes are harmless; a space pointing to
 	//    a non-existent node is not). Step is set to 0 temporarily.
@@ -164,7 +180,7 @@ export async function addEditNode(
 			prompt
 		})
 		.returning()
-		.get()
+		.get();
 
 	// 2. Try to update the space — the WHERE guard enforces the edit limit atomically.
 	try {
@@ -179,15 +195,10 @@ export async function addEditNode(
 			})
 			.where(and(eq(spaces.id, spaceId), lt(spaces.editCount, MAX_EDITS_PER_SPACE)))
 			.returning()
-			.get()
+			.get();
 
 		if (!space) {
-			// Rollback: delete the orphaned node
-			await db.delete(editHistory).where(eq(editHistory.id, nodeId)).run()
-			// Check why it failed
-			const existing = await db.query.spaces.findFirst({ where: eq(spaces.id, spaceId) })
-			if (!existing) throw new Error(`Space not found: ${spaceId}`)
-			throw new Error(`Edit limit reached (${MAX_EDITS_PER_SPACE} max)`)
+			throw new Error('Edit limit reached — maximum edits per space exceeded');
 		}
 
 		// 3. Now set the correct step on the node (matches the incremented editCount).
@@ -195,26 +206,19 @@ export async function addEditNode(
 			.update(editHistory)
 			.set({ step: space.editCount })
 			.where(eq(editHistory.id, nodeId))
-			.returning()
+			.returning();
 
-		return { space, node: updatedNode ?? node }
+		return { space, node: updatedNode ?? node };
 	} catch (e) {
-		// If it's our own thrown error, rethrow as-is
-		if (
-			e instanceof Error &&
-			(e.message.includes('Edit limit') || e.message.includes('Space not found'))
-		) {
-			throw e
-		}
 		// Rollback orphaned node on unexpected error
 		await db
 			.delete(editHistory)
 			.where(eq(editHistory.id, nodeId))
 			.run()
 			.catch((rollbackErr) => {
-				console.error('Failed to rollback orphaned edit node', nodeId, rollbackErr)
-			})
-		throw e
+				console.error('Failed to rollback orphaned edit node', nodeId, rollbackErr);
+			});
+		throw e;
 	}
 }
 
@@ -224,7 +228,7 @@ export function getEditHistory(db: DbClient, spaceId: string) {
 		.from(editHistory)
 		.where(eq(editHistory.spaceId, spaceId))
 		.orderBy(asc(editHistory.step))
-		.all()
+		.all();
 }
 
 export async function deleteEditNode(db: DbClient, spaceId: string, nodeId: string) {
@@ -233,27 +237,27 @@ export async function deleteEditNode(db: DbClient, spaceId: string, nodeId: stri
 		db.select().from(editHistory).where(eq(editHistory.parentId, nodeId)).all(),
 		db.select().from(editHistory).where(eq(editHistory.id, nodeId)).get(),
 		db.select().from(spaces).where(eq(spaces.id, spaceId)).get()
-	])
+	]);
 
-	if (children.length > 0) throw new Error('Cannot delete a node with children')
-	if (!node) throw new Error('Edit node not found')
-	if (!sp) throw new Error('Space not found')
+	if (children.length > 0) throw new Error('Cannot delete a node with children');
+	if (!node) throw new Error('Edit node not found');
+	if (!sp) throw new Error('Space not found');
 
-	const newActiveNodeId = sp.activeNodeId === nodeId ? (node.parentId ?? null) : sp.activeNodeId
+	const newActiveNodeId = sp.activeNodeId === nodeId ? (node.parentId ?? null) : sp.activeNodeId;
 
-	let newImageUrl = sp.originalImageUrl
+	let newImageUrl = sp.originalImageUrl;
 	if (newActiveNodeId) {
 		const activeNode = await db
 			.select()
 			.from(editHistory)
 			.where(eq(editHistory.id, newActiveNodeId))
-			.get()
-		if (activeNode) newImageUrl = activeNode.imageUrl
+			.get();
+		if (activeNode) newImageUrl = activeNode.imageUrl;
 	}
 
 	// 2. Delete the node first (a missing history node is less harmful than a
 	//    space pointing to a non-existent node)
-	await db.delete(editHistory).where(eq(editHistory.id, nodeId)).run()
+	await db.delete(editHistory).where(eq(editHistory.id, nodeId)).run();
 
 	// 3. Update the space — if this fails, re-insert the deleted node to restore consistency
 	try {
@@ -267,9 +271,13 @@ export async function deleteEditNode(db: DbClient, spaceId: string, nodeId: stri
 			})
 			.where(eq(spaces.id, spaceId))
 			.returning()
-			.get()
+			.get();
 
-		return space
+		if (!space) {
+			throw new Error(`Failed to update space: ${spaceId}`);
+		}
+
+		return space;
 	} catch (e) {
 		// Rollback: re-insert the deleted node
 		await db
@@ -284,9 +292,9 @@ export async function deleteEditNode(db: DbClient, spaceId: string, nodeId: stri
 			})
 			.run()
 			.catch((rollbackErr) => {
-				console.error('Failed to rollback deleted edit node', node.id, rollbackErr)
-			})
-		throw e
+				console.error('Failed to rollback deleted edit node', node.id, rollbackErr);
+			});
+		throw e;
 	}
 }
 
@@ -302,9 +310,9 @@ export function createSeedSession(db: DbClient, archetype: string) {
 			isSeed: true
 		})
 		.returning()
-		.get()
+		.get();
 }
 
 export function getSeedSessions(db: DbClient) {
-	return db.select().from(sessions).where(eq(sessions.isSeed, true)).all()
+	return db.select().from(sessions).where(eq(sessions.isSeed, true)).all();
 }

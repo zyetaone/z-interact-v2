@@ -22,7 +22,6 @@
 		"@zyeta/world-engine": "workspace:*",
 		"@lucide/svelte": "^0.563.1",
 		"drizzle-orm": "^0.45.1",
-		"qrcode": "^1.5.4",
 		"valibot": "^1.2.0"
 	},
 	"devDependencies": {
@@ -34,7 +33,6 @@
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.2.0",
 		"@types/node": "^24.10.13",
-		"@types/qrcode": "^1.5.6",
 		"drizzle-kit": "^0.31.9",
 		"svelte-check": "^4.4.3",
 		"tailwindcss": "^4.2.0",

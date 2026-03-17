@@ -84,6 +84,7 @@ eslint.config.js                                → KEEP (shared)
 ### Task 1: Create workspace root and directory scaffold
 
 **Files:**
+
 - Modify: `package.json` (rewrite as workspace root)
 - Create: `packages/shared/package.json`
 - Create: `packages/editor-engine/package.json`
@@ -109,33 +110,33 @@ Replace the current `package.json` with a Bun workspace root:
 
 ```json
 {
-  "name": "workspace-studio-v2",
-  "private": true,
-  "workspaces": ["packages/*", "apps/*"],
-  "scripts": {
-    "dev": "bun run --filter @zyeta/quest dev",
-    "dev:showcase": "bun run --filter @zyeta/showcase dev",
-    "build": "bun run --filter './apps/*' build",
-    "check": "bun run --filter './apps/*' check",
-    "test": "vitest run",
-    "lint": "prettier --check . && eslint .",
-    "format": "prettier --write ."
-  },
-  "devDependencies": {
-    "@eslint/compat": "^2.0.2",
-    "@eslint/js": "^9.39.3",
-    "eslint": "^9.39.3",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-svelte": "^3.15.0",
-    "globals": "^17.3.0",
-    "prettier": "^3.8.1",
-    "prettier-plugin-svelte": "^3.5.0",
-    "prettier-plugin-tailwindcss": "^0.7.2",
-    "svelte": "^5.53.3",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.0",
-    "vitest": "^4.0.18"
-  }
+	"name": "workspace-studio-v2",
+	"private": true,
+	"workspaces": ["packages/*", "apps/*"],
+	"scripts": {
+		"dev": "bun run --filter @zyeta/quest dev",
+		"dev:showcase": "bun run --filter @zyeta/showcase dev",
+		"build": "bun run --filter './apps/*' build",
+		"check": "bun run --filter './apps/*' check",
+		"test": "vitest run",
+		"lint": "prettier --check . && eslint .",
+		"format": "prettier --write ."
+	},
+	"devDependencies": {
+		"@eslint/compat": "^2.0.2",
+		"@eslint/js": "^9.39.3",
+		"eslint": "^9.39.3",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-svelte": "^3.15.0",
+		"globals": "^17.3.0",
+		"prettier": "^3.8.1",
+		"prettier-plugin-svelte": "^3.5.0",
+		"prettier-plugin-tailwindcss": "^0.7.2",
+		"svelte": "^5.53.3",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.56.0",
+		"vitest": "^4.0.18"
+	}
 }
 ```
 
@@ -143,29 +144,29 @@ Replace the current `package.json` with a Bun workspace root:
 
 ```json
 {
-  "name": "@zyeta/shared",
-  "private": true,
-  "version": "0.0.1",
-  "type": "module",
-  "exports": {
-    "./db": "./src/db/index.ts",
-    "./db/schema": "./src/db/schema.ts",
-    "./db/queries": "./src/db/queries.ts",
-    "./types": "./src/types/workspace.ts",
-    "./config/quest": "./src/config/quest.ts",
-    "./config/archetypes": "./src/config/archetypes.ts",
-    "./config/assets": "./src/config/assets.ts",
-    "./utils/*": "./src/utils/*.ts",
-    "./components/*": "./src/components/*.svelte"
-  },
-  "dependencies": {
-    "drizzle-orm": "^0.45.1",
-    "@libsql/client": "^0.17.0",
-    "valibot": "^1.2.0"
-  },
-  "peerDependencies": {
-    "svelte": "^5.0.0"
-  }
+	"name": "@zyeta/shared",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"exports": {
+		"./db": "./src/db/index.ts",
+		"./db/schema": "./src/db/schema.ts",
+		"./db/queries": "./src/db/queries.ts",
+		"./types": "./src/types/workspace.ts",
+		"./config/quest": "./src/config/quest.ts",
+		"./config/archetypes": "./src/config/archetypes.ts",
+		"./config/assets": "./src/config/assets.ts",
+		"./utils/*": "./src/utils/*.ts",
+		"./components/*": "./src/components/*.svelte"
+	},
+	"dependencies": {
+		"drizzle-orm": "^0.45.1",
+		"@libsql/client": "^0.17.0",
+		"valibot": "^1.2.0"
+	},
+	"peerDependencies": {
+		"svelte": "^5.0.0"
+	}
 }
 ```
 
@@ -173,26 +174,26 @@ Replace the current `package.json` with a Bun workspace root:
 
 ```json
 {
-  "name": "@zyeta/editor-engine",
-  "private": true,
-  "version": "0.0.1",
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./editor": "./src/editor.svelte.ts",
-    "./server": "./src/server/index.ts",
-    "./server/*": "./src/server/*.ts",
-    "./components/*": "./src/components/*.svelte",
-    "./actions/*": "./src/actions/*.svelte.ts",
-    "./utils/*": "./src/utils/*.ts"
-  },
-  "dependencies": {
-    "@zyeta/shared": "workspace:*",
-    "@fal-ai/client": "^1.9.3"
-  },
-  "peerDependencies": {
-    "svelte": "^5.0.0"
-  }
+	"name": "@zyeta/editor-engine",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./editor": "./src/editor.svelte.ts",
+		"./server": "./src/server/index.ts",
+		"./server/*": "./src/server/*.ts",
+		"./components/*": "./src/components/*.svelte",
+		"./actions/*": "./src/actions/*.svelte.ts",
+		"./utils/*": "./src/utils/*.ts"
+	},
+	"dependencies": {
+		"@zyeta/shared": "workspace:*",
+		"@fal-ai/client": "^1.9.3"
+	},
+	"peerDependencies": {
+		"svelte": "^5.0.0"
+	}
 }
 ```
 
@@ -200,27 +201,27 @@ Replace the current `package.json` with a Bun workspace root:
 
 ```json
 {
-  "name": "@zyeta/world-engine",
-  "private": true,
-  "version": "0.0.1",
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./scene/*": "./src/scene/*.svelte",
-    "./IsometricScene": "./src/IsometricScene.svelte"
-  },
-  "dependencies": {
-    "@zyeta/shared": "workspace:*",
-    "@threlte/core": "^8.4.0",
-    "@threlte/extras": "^9.8.1",
-    "three": "^0.183.1"
-  },
-  "devDependencies": {
-    "@types/three": "^0.183.1"
-  },
-  "peerDependencies": {
-    "svelte": "^5.0.0"
-  }
+	"name": "@zyeta/world-engine",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./scene/*": "./src/scene/*.svelte",
+		"./IsometricScene": "./src/IsometricScene.svelte"
+	},
+	"dependencies": {
+		"@zyeta/shared": "workspace:*",
+		"@threlte/core": "^8.4.0",
+		"@threlte/extras": "^9.8.1",
+		"three": "^0.183.1"
+	},
+	"devDependencies": {
+		"@types/three": "^0.183.1"
+	},
+	"peerDependencies": {
+		"svelte": "^5.0.0"
+	}
 }
 ```
 
@@ -228,19 +229,19 @@ Replace the current `package.json` with a Bun workspace root:
 
 ```json
 {
-  "name": "@zyeta/video-engine",
-  "private": true,
-  "version": "0.0.1",
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "dependencies": {
-    "@zyeta/shared": "workspace:*"
-  },
-  "peerDependencies": {
-    "svelte": "^5.0.0"
-  }
+	"name": "@zyeta/video-engine",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"dependencies": {
+		"@zyeta/shared": "workspace:*"
+	},
+	"peerDependencies": {
+		"svelte": "^5.0.0"
+	}
 }
 ```
 
@@ -248,47 +249,47 @@ Replace the current `package.json` with a Bun workspace root:
 
 ```json
 {
-  "name": "@zyeta/quest",
-  "private": true,
-  "version": "0.0.1",
-  "type": "module",
-  "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview",
-    "prepare": "svelte-kit sync || echo ''",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio",
-    "dev:wrangler": "bun run build && bunx wrangler dev",
-    "deploy": "bun run build && bunx wrangler deploy"
-  },
-  "dependencies": {
-    "@zyeta/shared": "workspace:*",
-    "@zyeta/editor-engine": "workspace:*",
-    "@zyeta/world-engine": "workspace:*",
-    "@lucide/svelte": "^0.563.1",
-    "qrcode": "^1.5.4",
-    "valibot": "^1.2.0"
-  },
-  "devDependencies": {
-    "@sveltejs/adapter-cloudflare": "^7.2.8",
-    "@sveltejs/kit": "^2.53.0",
-    "@sveltejs/vite-plugin-svelte": "^6.2.4",
-    "@tailwindcss/forms": "^0.5.11",
-    "@tailwindcss/typography": "^0.5.19",
-    "@tailwindcss/vite": "^4.2.0",
-    "@types/node": "^24.10.13",
-    "@types/qrcode": "^1.5.6",
-    "drizzle-kit": "^0.31.9",
-    "svelte-check": "^4.4.3",
-    "tailwindcss": "^4.2.0",
-    "vite": "^7.3.1",
-    "vite-plugin-devtools-json": "^1.0.0",
-    "wrangler": "^4.67.0"
-  }
+	"name": "@zyeta/quest",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"db:push": "drizzle-kit push",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "drizzle-kit migrate",
+		"db:studio": "drizzle-kit studio",
+		"dev:wrangler": "bun run build && bunx wrangler dev",
+		"deploy": "bun run build && bunx wrangler deploy"
+	},
+	"dependencies": {
+		"@zyeta/shared": "workspace:*",
+		"@zyeta/editor-engine": "workspace:*",
+		"@zyeta/world-engine": "workspace:*",
+		"@lucide/svelte": "^0.563.1",
+		"qrcode": "^1.5.4",
+		"valibot": "^1.2.0"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-cloudflare": "^7.2.8",
+		"@sveltejs/kit": "^2.53.0",
+		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"@tailwindcss/forms": "^0.5.11",
+		"@tailwindcss/typography": "^0.5.19",
+		"@tailwindcss/vite": "^4.2.0",
+		"@types/node": "^24.10.13",
+		"@types/qrcode": "^1.5.6",
+		"drizzle-kit": "^0.31.9",
+		"svelte-check": "^4.4.3",
+		"tailwindcss": "^4.2.0",
+		"vite": "^7.3.1",
+		"vite-plugin-devtools-json": "^1.0.0",
+		"wrangler": "^4.67.0"
+	}
 }
 ```
 
@@ -296,37 +297,37 @@ Replace the current `package.json` with a Bun workspace root:
 
 ```json
 {
-  "name": "@zyeta/showcase",
-  "private": true,
-  "version": "0.0.1",
-  "type": "module",
-  "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview",
-    "prepare": "svelte-kit sync || echo ''",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
-  },
-  "dependencies": {
-    "@zyeta/shared": "workspace:*",
-    "@zyeta/editor-engine": "workspace:*",
-    "@zyeta/world-engine": "workspace:*",
-    "@zyeta/video-engine": "workspace:*",
-    "@lucide/svelte": "^0.563.1"
-  },
-  "devDependencies": {
-    "@sveltejs/adapter-cloudflare": "^7.2.8",
-    "@sveltejs/kit": "^2.53.0",
-    "@sveltejs/vite-plugin-svelte": "^6.2.4",
-    "@tailwindcss/forms": "^0.5.11",
-    "@tailwindcss/typography": "^0.5.19",
-    "@tailwindcss/vite": "^4.2.0",
-    "svelte-check": "^4.4.3",
-    "tailwindcss": "^4.2.0",
-    "vite": "^7.3.1",
-    "vite-plugin-devtools-json": "^1.0.0",
-    "wrangler": "^4.67.0"
-  }
+	"name": "@zyeta/showcase",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+	},
+	"dependencies": {
+		"@zyeta/shared": "workspace:*",
+		"@zyeta/editor-engine": "workspace:*",
+		"@zyeta/world-engine": "workspace:*",
+		"@zyeta/video-engine": "workspace:*",
+		"@lucide/svelte": "^0.563.1"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-cloudflare": "^7.2.8",
+		"@sveltejs/kit": "^2.53.0",
+		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"@tailwindcss/forms": "^0.5.11",
+		"@tailwindcss/typography": "^0.5.19",
+		"@tailwindcss/vite": "^4.2.0",
+		"svelte-check": "^4.4.3",
+		"tailwindcss": "^4.2.0",
+		"vite": "^7.3.1",
+		"vite-plugin-devtools-json": "^1.0.0",
+		"wrangler": "^4.67.0"
+	}
 }
 ```
 
@@ -342,6 +343,7 @@ git commit -m "chore: scaffold monorepo directory structure and package.json fil
 ### Task 2: Move shared package files
 
 **Files:**
+
 - Move files from `src/lib/` to `packages/shared/src/`
 - Create: `packages/shared/src/index.ts` (barrel export)
 
@@ -402,6 +404,7 @@ git commit -m "feat: create @zyeta/shared package with DB, config, types, utils,
 ### Task 3: Move editor engine files
 
 **Files:**
+
 - Move files from `src/lib/` to `packages/editor-engine/src/`
 - Create: `packages/editor-engine/src/index.ts` (barrel export)
 
@@ -466,6 +469,7 @@ git commit -m "feat: create @zyeta/editor-engine package with AI editor, compone
 ### Task 4: Move world engine files
 
 **Files:**
+
 - Move files from `src/lib/components/` to `packages/world-engine/src/`
 - Create: `packages/world-engine/src/index.ts`
 
@@ -503,6 +507,7 @@ git commit -m "feat: create @zyeta/world-engine package with Three.js isometric 
 ### Task 5: Create video engine package
 
 **Files:**
+
 - Create: `packages/video-engine/src/VideoStudio.svelte`
 - Create: `packages/video-engine/src/index.ts`
 
@@ -519,6 +524,7 @@ export { default as VideoStudio } from './VideoStudio.svelte';
 **Step 2: Create VideoStudio component**
 
 Create `packages/video-engine/src/VideoStudio.svelte` — a headless video generation component that:
+
 - Accepts `images: Array<{ id: string; url: string; name: string }>` as a prop
 - Accepts `apiEndpoint: string` (defaults to `/api/video`)
 - Accepts `uploadEndpoint: string` (defaults to `/api/upload`)
@@ -540,6 +546,7 @@ git commit -m "feat: create @zyeta/video-engine package with VideoStudio compone
 ### Task 6: Move quest app routes and config
 
 **Files:**
+
 - Move all route files to `apps/quest/src/routes/`
 - Move app-level files to `apps/quest/src/`
 - Copy config files to `apps/quest/`
@@ -576,6 +583,7 @@ cp drizzle.config.ts apps/quest/drizzle.config.ts 2>/dev/null || true
 In `apps/quest/src/routes/`:
 
 Replace patterns like:
+
 - `$lib/server/db/queries` → `@zyeta/shared/db/queries`
 - `$lib/server/ai` → `@zyeta/editor-engine/server`
 - `$lib/server/storage` → `@zyeta/editor-engine/server`
@@ -599,6 +607,7 @@ Replace patterns like:
 - `$lib/actions/mask-canvas.svelte` → `@zyeta/editor-engine/actions/mask-canvas`
 
 Keep `$lib/` imports that reference app-local files:
+
 - `$lib/quest-engine.svelte` → stays as `$lib/quest-engine.svelte` (app-local)
 - `$lib/toast.svelte` → stays as `$lib/toast.svelte` (app-local)
 
@@ -614,6 +623,7 @@ git commit -m "feat: move quest app routes and update import paths to workspace 
 ### Task 7: Create showcase app
 
 **Files:**
+
 - Create: `apps/showcase/src/app.html`
 - Create: `apps/showcase/src/app.d.ts`
 - Create: `apps/showcase/src/routes/+layout.svelte`
@@ -659,6 +669,7 @@ git commit -m "feat: create showcase app with engine demo routes"
 ### Task 8: Refactor DB layer to accept platform env as parameter
 
 **Files:**
+
 - Modify: `packages/shared/src/db/index.ts`
 - Modify: `packages/shared/src/db/queries.ts`
 
@@ -675,13 +686,13 @@ Change query functions from calling `getRequestEvent()` internally to accepting 
 ```ts
 // Before (coupled to SvelteKit)
 export async function getWorkspace(tableId: number) {
-  const db = getDb(getRequestEvent()?.platform);
-  // ...
+	const db = getDb(getRequestEvent()?.platform);
+	// ...
 }
 
 // After (decoupled)
 export async function getWorkspace(db: ReturnType<typeof getDb>, tableId: number) {
-  // ...
+	// ...
 }
 ```
 
@@ -703,6 +714,7 @@ git commit -m "refactor: decouple DB layer from SvelteKit's getRequestEvent"
 ### Task 9: Refactor AI/Storage layer to accept platform env
 
 **Files:**
+
 - Modify: `packages/editor-engine/src/server/ai/fal-config.ts`
 - Modify: `packages/editor-engine/src/server/storage.ts`
 
@@ -713,13 +725,17 @@ git commit -m "refactor: decouple DB layer from SvelteKit's getRequestEvent"
 ```ts
 // Before
 export function configureFal() {
-  const env = getRequestEvent()?.platform?.env;
-  // ...
+	const env = getRequestEvent()?.platform?.env;
+	// ...
 }
 
 // After
-export function configureFal(env: { FAL_API_KEY: string; CLOUDFLARE_ACCOUNT_ID?: string; CLOUDFLARE_AI_GATEWAY_ID?: string }) {
-  // ...
+export function configureFal(env: {
+	FAL_API_KEY: string;
+	CLOUDFLARE_ACCOUNT_ID?: string;
+	CLOUDFLARE_AI_GATEWAY_ID?: string;
+}) {
+	// ...
 }
 ```
 
@@ -728,13 +744,13 @@ export function configureFal(env: { FAL_API_KEY: string; CLOUDFLARE_ACCOUNT_ID?:
 ```ts
 // Before
 export async function persistImage(url: string) {
-  const bucket = getRequestEvent()?.platform?.env?.R2_IMAGES;
-  // ...
+	const bucket = getRequestEvent()?.platform?.env?.R2_IMAGES;
+	// ...
 }
 
 // After
 export async function persistImage(url: string, bucket: R2Bucket, publicUrl: string) {
-  // ...
+	// ...
 }
 ```
 
@@ -754,6 +770,7 @@ git commit -m "refactor: decouple AI/storage layer from SvelteKit's getRequestEv
 ### Task 10: Clean up old src/ directory and verify builds
 
 **Files:**
+
 - Delete: `src/` directory (all files now live in packages/ and apps/)
 
 **Step 1: Remove old src/ directory**
@@ -776,6 +793,7 @@ cd apps/quest && bun run build
 ```
 
 Fix any import errors. Common issues:
+
 - Missing `$lib` aliases (needs `svelte.config.js` paths config)
 - Package exports not matching (fix `exports` field in package.json)
 - Server-only imports leaking to client (add Vite `ssr.external` config)
@@ -805,6 +823,7 @@ git commit -m "chore: remove old src/ directory, complete monorepo migration"
 ## Execution Notes
 
 **Task dependencies:**
+
 - Tasks 1-5 can be done in parallel (scaffolding + file moves)
 - Task 6 depends on Tasks 2-5 (needs packages to exist for imports)
 - Task 7 depends on Tasks 2-5
@@ -812,6 +831,7 @@ git commit -m "chore: remove old src/ directory, complete monorepo migration"
 - Task 10 depends on all others
 
 **Recommended team composition for agentic teams:**
+
 - **Lead**: Coordinates, creates scaffold (Task 1), reviews
 - **Shared-dev**: Task 2 + Task 8 (shared package + DB refactor)
 - **Engine-dev**: Tasks 3, 4, 5 (all engine packages)

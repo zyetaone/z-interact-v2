@@ -3,6 +3,9 @@
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
+	"scripts": {
+		"dev": "cd ../../ && bun run dev:editor"
+	},
 	"exports": {
 		".": "./src/index.ts",
 		"./editor": "./src/editor.svelte.ts",

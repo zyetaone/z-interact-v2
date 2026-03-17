@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { base } from '$app/paths';
-	import IsometricScene, {
-		type IslandModel,
-		type SceneControls
-	} from '@zyeta/world-engine/IsometricScene';
+	import { IsometricScene, type IslandModel, type SceneControls } from '@zyeta/world-engine';
 	import { Globe, ChevronLeft, X, Gamepad2, RotateCcw, Keyboard, Hammer } from '@lucide/svelte';
 
 	let { data } = $props();

@@ -1,1 +1,103 @@
 @import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+/* ─── Theme ───────────────────────────────────────────── */
+
+:root {
+	--bg-gradient-from: #0f172a;
+	--bg-gradient-via: #1e1b4b;
+	--bg-gradient-to: #0f172a;
+	--glass-bg: rgba(255, 255, 255, 0.08);
+	--glass-border: rgba(255, 255, 255, 0.12);
+}
+
+/* ─── Base ────────────────────────────────────────────── */
+
+html {
+	background: linear-gradient(
+		135deg,
+		var(--bg-gradient-from),
+		var(--bg-gradient-via),
+		var(--bg-gradient-to)
+	);
+	min-height: 100vh;
+	color: #e2e8f0;
+	-webkit-font-smoothing: antialiased;
+	-webkit-tap-highlight-color: transparent;
+}
+
+body {
+	min-height: 100vh;
+}
+
+/* ─── Glass Morphism ──────────────────────────────────── */
+
+.glass {
+	backdrop-filter: blur(16px);
+	background: var(--glass-bg);
+	border: 1px solid var(--glass-border);
+}
+
+.glass-panel {
+	backdrop-filter: blur(20px);
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.glass-input {
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	backdrop-filter: blur(10px);
+	transition: all 0.2s ease-out;
+}
+
+.glass-input:focus-within {
+	background: rgba(255, 255, 255, 0.07);
+	border-color: rgba(139, 92, 246, 0.4);
+	box-shadow: 0 0 15px rgba(139, 92, 246, 0.1);
+}
+
+/* ─── Focus States ────────────────────────────────────── */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+	outline: none;
+	box-shadow:
+		0 0 0 2px rgba(139, 92, 246, 0.4),
+		0 0 0 4px rgba(15, 23, 42, 1);
+}
+
+/* ─── Reduced Motion ─────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+/* ─── Scrollbar ───────────────────────────────────────── */
+
+::-webkit-scrollbar {
+	width: 6px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.15);
+	border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.25);
+}

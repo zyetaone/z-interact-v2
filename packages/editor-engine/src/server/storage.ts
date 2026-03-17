@@ -1,22 +1,22 @@
 // Trusted domains that fal.ai returns files from
-const TRUSTED_DOMAINS = ['fal.media', 'v3.fal.media', 'v3b.fal.media', 'storage.googleapis.com']
+const TRUSTED_DOMAINS = ['fal.media', 'v3.fal.media', 'v3b.fal.media', 'storage.googleapis.com'];
 
-import type { R2BucketLike } from './ai/fal-config'
+import type { R2BucketLike } from './ai/fal-config';
 
 export interface StorageEnv {
-	R2_IMAGES: R2BucketLike
-	R2_PUBLIC_URL?: string
+	R2_IMAGES: R2BucketLike;
+	R2_PUBLIC_URL?: string;
 }
 
 interface PersistOptions {
 	/** Max file size in bytes */
-	maxSize: number
+	maxSize: number;
 	/** File extension (e.g. 'png') */
-	extension: string
+	extension: string;
 	/** Fallback MIME type if response doesn't include content-type */
-	fallbackContentType: string
+	fallbackContentType: string;
 	/** Label for error messages */
-	label: string
+	label: string;
 }
 
 const IMAGE_OPTIONS: PersistOptions = {
@@ -24,15 +24,22 @@ const IMAGE_OPTIONS: PersistOptions = {
 	extension: 'png',
 	fallbackContentType: 'image/png',
 	label: 'Image'
-}
+};
+
+const MODEL_OPTIONS: PersistOptions = {
+	maxSize: 50 * 1024 * 1024, // 50MB (GLB files are larger)
+	extension: 'glb',
+	fallbackContentType: 'model/gltf-binary',
+	label: 'Model'
+};
 
 /**
  * Determine the base URL for R2 image access.
  * Returns '/api/r2' for local dev, the public URL for production.
  */
 function getR2BaseUrl(env: StorageEnv, isLocal: boolean): string | null {
-	if (isLocal) return '/api/r2'
-	return env.R2_PUBLIC_URL ?? null
+	if (isLocal) return '/api/r2';
+	return env.R2_PUBLIC_URL ?? null;
 }
 
 /**
@@ -50,55 +57,55 @@ async function persistToR2(
 ): Promise<string> {
 	// Already persisted (local paths or known R2 public URL)
 	if (sourceUrl.startsWith('/api/r2/') || sourceUrl.startsWith('/assets/')) {
-		return sourceUrl
+		return sourceUrl;
 	}
 	if (env.R2_PUBLIC_URL && sourceUrl.startsWith(env.R2_PUBLIC_URL)) {
-		return sourceUrl
+		return sourceUrl;
 	}
 
-	const r2 = env.R2_IMAGES
-	const baseUrl = getR2BaseUrl(env, isLocal)
+	const r2 = env.R2_IMAGES;
+	const baseUrl = getR2BaseUrl(env, isLocal);
 
 	if (!r2 || !baseUrl) {
-		throw new Error(`${options.label} storage not available`)
+		throw new Error(`${options.label} storage not available`);
 	}
 
 	// SSRF protection: HTTPS-only + trusted AI provider domains
-	const url = new URL(sourceUrl)
+	const url = new URL(sourceUrl);
 	if (url.protocol !== 'https:') {
-		throw new Error('Only HTTPS URLs are allowed')
+		throw new Error('Only HTTPS URLs are allowed');
 	}
-	const r2Host = env.R2_PUBLIC_URL?.replace(/^https?:\/\//, '')
-	const allowed = [...TRUSTED_DOMAINS, r2Host].filter(Boolean)
+	const r2Host = env.R2_PUBLIC_URL?.replace(/^https?:\/\//, '');
+	const allowed = [...TRUSTED_DOMAINS, r2Host].filter(Boolean);
 	if (!allowed.some((domain) => url.hostname === domain || url.hostname.endsWith(`.${domain}`))) {
-		throw new Error(`${options.label} URL not from a trusted source`)
+		throw new Error(`${options.label} URL not from a trusted source`);
 	}
 
-	const response = await fetch(sourceUrl, { redirect: 'error' })
-	if (!response.ok) throw new Error(`${options.label} download failed: ${response.status}`)
+	const response = await fetch(sourceUrl, { redirect: 'error' });
+	if (!response.ok) throw new Error(`${options.label} download failed: ${response.status}`);
 
-	const contentLength = response.headers.get('content-length')
+	const contentLength = response.headers.get('content-length');
 	if (contentLength && parseInt(contentLength, 10) > options.maxSize) {
-		throw new Error(`${options.label} too large: ${contentLength} bytes (max ${options.maxSize})`)
+		throw new Error(`${options.label} too large: ${contentLength} bytes (max ${options.maxSize})`);
 	}
 
-	const buffer = await response.arrayBuffer()
+	const buffer = await response.arrayBuffer();
 	if (buffer.byteLength > options.maxSize) {
 		throw new Error(
 			`${options.label} too large: ${buffer.byteLength} bytes (max ${options.maxSize})`
-		)
+		);
 	}
 
-	const filename = `${crypto.randomUUID()}.${options.extension}`
+	const filename = `${crypto.randomUUID()}.${options.extension}`;
 
 	await r2.put(filename, buffer, {
 		httpMetadata: {
 			contentType: response.headers.get('content-type') || options.fallbackContentType,
 			cacheControl: 'public, max-age=31536000'
 		}
-	})
+	});
 
-	return `${baseUrl}/${filename}`
+	return `${baseUrl}/${filename}`;
 }
 
 /** Persist an AI-generated image to R2. */
@@ -107,5 +114,14 @@ export function persistImage(
 	env: StorageEnv,
 	isLocal: boolean
 ): Promise<string> {
-	return persistToR2(sourceUrl, IMAGE_OPTIONS, env, isLocal)
+	return persistToR2(sourceUrl, IMAGE_OPTIONS, env, isLocal);
+}
+
+/** Persist an AI-generated 3D model (GLB) to R2. */
+export function persistModel(
+	sourceUrl: string,
+	env: StorageEnv,
+	isLocal: boolean
+): Promise<string> {
+	return persistToR2(sourceUrl, MODEL_OPTIONS, env, isLocal);
 }

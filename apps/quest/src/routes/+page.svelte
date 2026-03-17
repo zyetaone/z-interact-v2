@@ -3,7 +3,7 @@
 	import { browser } from '$app/environment';
 	import { Sparkles, ArrowRight, Globe, Hammer, Fingerprint, RotateCcw } from '@lucide/svelte';
 	import { ARCHETYPES } from '@zyeta/shared/config/archetypes';
-	import { toast } from '$lib/toast.svelte';
+	import { toast } from '@zyeta/shared/utils/toast.svelte';
 
 	let { data } = $props();
 

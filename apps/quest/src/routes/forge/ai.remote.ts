@@ -1,28 +1,40 @@
-import * as v from 'valibot'
-import { command, getRequestEvent } from '$app/server'
-import { createImageEditor, createImageSegmenter, persistImage } from '@zyeta/editor-engine/server'
-import type { FalEnv, StorageEnv } from '@zyeta/editor-engine/server'
-import { getDb } from '@zyeta/shared/db'
-import { getSpace, addEditNode, deleteEditNode, updateSpace } from '@zyeta/shared/db/queries'
-import { BLOCKED_TERMS, MAX_FIELD_LENGTH } from '@zyeta/shared/utils/edit-prompt'
+import * as v from 'valibot';
+import { command, getRequestEvent } from '$app/server';
+import {
+	createImageEditor,
+	createImageSegmenter,
+	createModelGenerator,
+	persistImage,
+	persistModel
+} from '@zyeta/editor-engine/server';
+import type { FalEnv, StorageEnv } from '@zyeta/editor-engine/server';
+import { getDb } from '@zyeta/shared/db';
+import {
+	getSpace,
+	addEditNode,
+	deleteEditNode,
+	updateSpace,
+	tryCompleteSpace
+} from '@zyeta/shared/db/queries';
+import { BLOCKED_TERMS, MAX_FIELD_LENGTH } from '@zyeta/shared/utils/edit-prompt';
 
 function env(): FalEnv & StorageEnv {
-	const e = getRequestEvent()?.platform?.env
-	if (!e?.FAL_API_KEY) throw new Error('FAL_API_KEY not configured')
-	if (!e?.R2_IMAGES) throw new Error('R2_IMAGES not configured')
-	return e as FalEnv & StorageEnv
+	const e = getRequestEvent()?.platform?.env;
+	if (!e?.FAL_API_KEY) throw new Error('FAL_API_KEY not configured');
+	if (!e?.R2_IMAGES) throw new Error('R2_IMAGES not configured');
+	return e as FalEnv & StorageEnv;
 }
 
 function db() {
-	return getDb(getRequestEvent()?.platform)
+	return getDb(getRequestEvent()?.platform);
 }
 
 function isLocal() {
-	return getRequestEvent()?.url?.hostname === 'localhost'
+	return getRequestEvent()?.url?.hostname === 'localhost';
 }
 
 function origin() {
-	return getRequestEvent()?.url?.origin
+	return getRequestEvent()?.url?.origin;
 }
 
 const safeImageUrl = v.pipe(
@@ -37,7 +49,7 @@ const safeImageUrl = v.pipe(
 			url.startsWith('https://'),
 		'Invalid URL'
 	)
-)
+);
 
 const safePrompt = v.pipe(
 	v.string(),
@@ -46,7 +58,7 @@ const safePrompt = v.pipe(
 		(text) => !BLOCKED_TERMS.some((term: string) => text.toLowerCase().includes(term)),
 		'Prompt contains blocked content'
 	)
-)
+);
 
 const safeMaskUrl = v.optional(
 	v.union([
@@ -57,7 +69,7 @@ const safeMaskUrl = v.optional(
 			v.maxLength(5 * 1024 * 1024)
 		)
 	])
-)
+);
 
 const EditImageSchema = v.object({
 	spaceId: v.pipe(v.string(), v.nonEmpty()),
@@ -67,20 +79,20 @@ const EditImageSchema = v.object({
 	tool: v.optional(v.picklist(['draw', 'brush', 'magic', 'poly'])),
 	mode: v.optional(v.picklist(['add', 'subtract', 'modify'])),
 	strength: v.optional(v.pipe(v.number(), v.minValue(0), v.maxValue(1)))
-})
+});
 
 export const editImage = command(EditImageSchema, async (data) => {
-	const event = getRequestEvent()
-	const sessionId = event?.cookies.get('session_id')
-	if (!sessionId) throw new Error('Unauthorized')
+	const event = getRequestEvent();
+	const sessionId = event?.cookies.get('session_id');
+	if (!sessionId) throw new Error('Unauthorized');
 
-	const d = db()
-	const space = await getSpace(d, data.spaceId)
-	if (!space) throw new Error('Space not found')
-	if (space.sessionId !== sessionId) throw new Error('Forbidden')
+	const d = db();
+	const space = await getSpace(d, data.spaceId);
+	if (!space) throw new Error('Space not found');
+	if (space.sessionId !== sessionId) throw new Error('Forbidden');
 
-	const e = env()
-	const editor = createImageEditor(e, origin())
+	const e = env();
+	const editor = createImageEditor(e, origin());
 	const result = await editor.edit({
 		imageUrl: space.currentImageUrl,
 		prompt: data.prompt,
@@ -89,9 +101,9 @@ export const editImage = command(EditImageSchema, async (data) => {
 		tool: data.tool,
 		mode: data.mode,
 		strength: data.strength
-	})
+	});
 
-	const persistedUrl = await persistImage(result.imageUrl, e, isLocal())
+	const persistedUrl = await persistImage(result.imageUrl, e, isLocal());
 
 	const { space: updatedSpace, node } = await addEditNode(
 		d,
@@ -99,7 +111,7 @@ export const editImage = command(EditImageSchema, async (data) => {
 		space.activeNodeId,
 		persistedUrl,
 		data.prompt
-	)
+	);
 
 	return {
 		space: updatedSpace,
@@ -111,62 +123,108 @@ export const editImage = command(EditImageSchema, async (data) => {
 			prompt: node.prompt,
 			createdAt: node.createdAt
 		}
-	}
-})
+	};
+});
 
 const SegmentSchema = v.object({
 	imageUrl: safeImageUrl,
 	points: v.array(v.tuple([v.number(), v.number()]))
-})
+});
 
 export const segmentObject = command(SegmentSchema, async (data) => {
-	const segmenter = createImageSegmenter(env(), origin())
+	const event = getRequestEvent();
+	const sessionId = event?.cookies.get('session_id');
+	if (!sessionId) throw new Error('Unauthorized');
+
+	const segmenter = createImageSegmenter(env(), origin());
 	return segmenter.segment({
 		imageUrl: data.imageUrl,
 		points: data.points
-	})
-})
+	});
+});
 
 const DeleteImageSchema = v.object({
 	spaceId: v.pipe(v.string(), v.nonEmpty()),
 	nodeId: v.pipe(v.string(), v.nonEmpty())
-})
+});
 
 export const deleteImage = command(DeleteImageSchema, async (data) => {
-	const event = getRequestEvent()
-	const sessionId = event?.cookies.get('session_id')
-	if (!sessionId) throw new Error('Unauthorized')
+	const event = getRequestEvent();
+	const sessionId = event?.cookies.get('session_id');
+	if (!sessionId) throw new Error('Unauthorized');
 
-	const d = db()
-	const space = await getSpace(d, data.spaceId)
-	if (!space) throw new Error('Space not found')
-	if (space.sessionId !== sessionId) throw new Error('Forbidden')
+	const d = db();
+	const space = await getSpace(d, data.spaceId);
+	if (!space) throw new Error('Space not found');
+	if (space.sessionId !== sessionId) throw new Error('Forbidden');
 
-	const updatedSpace = await deleteEditNode(d, data.spaceId, data.nodeId)
-	return { space: updatedSpace }
-})
+	const updatedSpace = await deleteEditNode(d, data.spaceId, data.nodeId);
+	return { space: updatedSpace };
+});
 
 const CompleteSpaceSchema = v.object({
 	spaceId: v.pipe(v.string(), v.nonEmpty())
-})
+});
 
 export const completeSpace = command(CompleteSpaceSchema, async (data) => {
-	const event = getRequestEvent()
-	const sessionId = event?.cookies.get('session_id')
-	if (!sessionId) throw new Error('Unauthorized')
+	const event = getRequestEvent();
+	const sessionId = event?.cookies.get('session_id');
+	if (!sessionId) throw new Error('Unauthorized');
 
-	const d = db()
-	const space = await getSpace(d, data.spaceId)
-	if (!space) throw new Error('Space not found')
-	if (space.sessionId !== sessionId) throw new Error('Forbidden')
+	const d = db();
+	const space = await getSpace(d, data.spaceId);
+	if (!space) throw new Error('Space not found');
+	if (space.sessionId !== sessionId) throw new Error('Forbidden');
 
 	if (space.status === 'complete') {
-		return { space }
+		return { space };
 	}
 
-	const updatedSpace = await updateSpace(d, data.spaceId, {
-		status: 'complete'
-	})
+	// Atomic conditional update — prevents double generation from race conditions
+	const completedSpace = await tryCompleteSpace(d, data.spaceId);
+	if (!completedSpace) {
+		// Another request already completed this space
+		const current = await getSpace(d, data.spaceId);
+		return { space: current ?? space };
+	}
 
-	return { space: updatedSpace }
-})
+	// Validate image URL before passing to external API (defense in depth)
+	const parsedUrl = v.safeParse(safeImageUrl, space.currentImageUrl);
+	if (!parsedUrl.success) {
+		console.error(`completeSpace: invalid currentImageUrl for space ${data.spaceId}`);
+		return { space: completedSpace };
+	}
+
+	// Fire-and-forget 3D model generation via waitUntil
+	const ctx = event?.platform?.ctx;
+	const e = env();
+	const imageUrl = parsedUrl.output;
+	const spaceId = data.spaceId;
+	const local = isLocal();
+	const requestOrigin = origin();
+
+	const generateModel = async () => {
+		try {
+			const generator = createModelGenerator(e, requestOrigin);
+			const { modelUrl: falModelUrl } = await generator.generate(imageUrl);
+			const persistedModelUrl = await persistModel(falModelUrl, e, local);
+			await updateSpace(d, spaceId, { modelUrl: persistedModelUrl });
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : String(err);
+			const urlType = imageUrl.startsWith('https://') ? 'remote' : 'local';
+			console.error(
+				`[3D-GEN-FAIL] space=${spaceId} urlType=${urlType} error=${msg}`
+			);
+		}
+	};
+
+	if (ctx?.waitUntil) {
+		// Production: respond immediately, generate in background
+		ctx.waitUntil(generateModel());
+	} else {
+		// Local dev: no waitUntil available, run inline but don't block on failure
+		generateModel();
+	}
+
+	return { space: completedSpace };
+});
