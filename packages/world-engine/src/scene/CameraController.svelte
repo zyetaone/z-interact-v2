@@ -32,6 +32,11 @@
 
 	const { camera, scene } = useThrelte();
 
+	// Arc heights (world units) added as sin(π·t) vertical lift during camera tweens.
+	// Larger values = more dramatic "swooping through the air" feel.
+	const ARC_ISLAND_SELECT = 3; // panning from one island to another
+	const ARC_OVERVIEW_RETURN = 2; // sweeping back to the bird's-eye overview
+
 	let perspCamRef = $state<PerspectiveCamera | null>(null);
 	let orthoCamRef = $state<OrthographicCamera | null>(null);
 	let orbitRef = $state<import('three/addons/controls/OrbitControls.js').OrbitControls | null>(
@@ -124,7 +129,7 @@
 			toTarget: new Vector3(pos[0], 1.5, pos[2]),
 			duration: 900,
 			elapsed: 0,
-			arcHeight: 3, // lift camera through a gentle arc across the sky
+			arcHeight: ARC_ISLAND_SELECT, // lift camera through a gentle arc across the sky
 			onComplete: () => {
 				isTransitioning = false;
 			}
@@ -218,7 +223,7 @@
 						toTarget: new Vector3(0, 0, 0),
 						duration: 700,
 						elapsed: 0,
-						arcHeight: 2, // gentle lift as we pull back to overview
+						arcHeight: ARC_OVERVIEW_RETURN, // gentle lift as we pull back to overview
 						onComplete: () => {
 							isTransitioning = false;
 						}
@@ -237,7 +242,7 @@
 				toTarget: new Vector3(0, 0, 0),
 				duration: 700,
 				elapsed: 0,
-				arcHeight: 2, // sweep upward through the air back to overview
+				arcHeight: ARC_OVERVIEW_RETURN, // sweep upward through the air back to overview
 				onComplete: () => {
 					isTransitioning = false;
 				}
@@ -281,7 +286,7 @@
 					toTarget: new Vector3(pos[0], 1.5, pos[2]),
 					duration: 700,
 					elapsed: 0,
-					arcHeight: 3, // arc through the air to the next island
+					arcHeight: ARC_ISLAND_SELECT, // arc through the air to the next island
 					onComplete: () => {
 						isTransitioning = false;
 					}

@@ -34,6 +34,11 @@
 	geometry.setAttribute('position', posAttr);
 
 	// Animate every frame — update Y (vertical float) and XZ (sway)
+	// Asymmetric X/Z frequencies (60 vs 50) create a natural-looking figure-eight
+	// Lissajous drift rather than perfectly circular motion.
+	const SWAY_FREQ_X = 60;
+	const SWAY_FREQ_Z = 50;
+
 	useTask(() => {
 		const t = performance.now() * 0.001;
 		for (let i = 0; i < COUNT; i++) {
@@ -46,8 +51,8 @@
 				pos[i * 3 + 2] = (Math.random() - 0.5) * SPREAD_XZ;
 			}
 			// Gentle horizontal sway
-			pos[i * 3] += Math.sin(t * speeds[i] * 60 + driftPhase[i]) * driftAmp[i];
-			pos[i * 3 + 2] += Math.cos(t * speeds[i] * 50 + driftPhase[i]) * driftAmp[i];
+			pos[i * 3] += Math.sin(t * speeds[i] * SWAY_FREQ_X + driftPhase[i]) * driftAmp[i];
+			pos[i * 3 + 2] += Math.cos(t * speeds[i] * SWAY_FREQ_Z + driftPhase[i]) * driftAmp[i];
 		}
 		posAttr.needsUpdate = true;
 	});

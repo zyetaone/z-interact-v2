@@ -15,7 +15,11 @@ import { CanvasTexture, RepeatWrapping } from 'three';
 // Module-level cache — survive component re-mounts
 const _cache = new Map<number, CanvasTexture>();
 
-/** Simple deterministic LCG pseudo-random number generator seeded by `seed`. */
+/**
+ * Simple deterministic multiplicative-hash pseudo-random number generator
+ * seeded by `seed`. Applies two rounds of avalanche mixing (Wang-hash style)
+ * and returns values in [0, 1).
+ */
 function makeRng(seed: number) {
 	let s = (seed + 1) * 2654435769;
 	return () => {
@@ -23,7 +27,7 @@ function makeRng(seed: number) {
 		s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
 		s ^= s >>> 16;
 		// normalise to [0, 1)
-		return ((s >>> 0) / 0xffffffff) % 1;
+		return (s >>> 0) / 0xffffffff;
 	};
 }
 

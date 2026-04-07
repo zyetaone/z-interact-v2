@@ -149,13 +149,16 @@
 	blur={2.5} far={6} resolution={256}
 	color={0x0a0a2e} frames={2} />
 
-<!-- Wispy cloud puffs drifting below the islands -->
+<!-- Wispy cloud puffs drifting below the islands.
+     Each entry: x/z = world position, y = vertical level (slightly below horizon),
+     sx/sz = secondary sphere XZ offsets for a billowy overlapping shape,
+     op = base opacity (kept very low so clouds are subtle atmosphere). -->
 {#each [
-	{ x: -12, y: -1.5, z: 8,  sx: 4.5, sz: 2.2, op: 0.07 },
-	{ x:  15, y: -2,   z: -5, sx: 5.5, sz: 2.0, op: 0.06 },
-	{ x:   3, y: -1.8, z: 14, sx: 3.8, sz: 1.8, op: 0.08 },
-	{ x: -18, y: -2.2, z: -10,sx: 6.0, sz: 2.5, op: 0.05 },
-	{ x:  20, y: -1.6, z:  4, sx: 4.2, sz: 1.9, op: 0.07 }
+	{ x: -12, y: -1.5, z:   8, sx: 4.5, sz: 2.2, op: 0.07 },
+	{ x:  15, y: -2,   z:  -5, sx: 5.5, sz: 2.0, op: 0.06 },
+	{ x:   3, y: -1.8, z:  14, sx: 3.8, sz: 1.8, op: 0.08 },
+	{ x: -18, y: -2.2, z: -10, sx: 6.0, sz: 2.5, op: 0.05 },
+	{ x:  20, y: -1.6, z:   4, sx: 4.2, sz: 1.9, op: 0.07 }
 ] as cloud, i (i)}
 	<T.Mesh position={[cloud.x, cloud.y, cloud.z]}>
 		<T.SphereGeometry args={[1, 8, 6]} />
@@ -168,7 +171,7 @@
 			depthWrite={false}
 		/>
 	</T.Mesh>
-	<!-- Extra overlapping sphere for a billowy shape -->
+	<!-- Second overlapping sphere (offset 30 % of sx, slightly raised) for billowy shape -->
 	<T.Mesh position={[cloud.x + cloud.sx * 0.3, cloud.y + 0.3, cloud.z + cloud.sz * 0.2]}>
 		<T.SphereGeometry args={[0.75, 8, 6]} />
 		<T.MeshStandardMaterial
