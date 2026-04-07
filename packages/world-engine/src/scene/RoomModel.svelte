@@ -2,6 +2,7 @@
 	import { T, useTask } from '@threlte/core';
 	import { useTexture, GLTF, HTML, FakeGlowMaterial } from '@threlte/extras';
 	import { Box3, Vector3, DoubleSide } from 'three';
+	import { getIslandTexture } from '../utils/island-texture';
 
 	let {
 		imageUrl,
@@ -36,6 +37,10 @@
 	const hasGlb = $derived(!!modelUrl && !glbError);
 	let boundsCheckCancelled = false;
 
+	// Terrain texture for island top — generated once per index, cached forever
+	// Use $derived.by so the texture is only fetched after browser canvas is available
+	const islandTex = $derived.by(() => (typeof document !== 'undefined' ? getIslandTexture(index) : null));
+
 	// Floating animation — each island oscillates at a different phase
 	// pauseFloat freezes the bob when the camera is diving into this island
 	useTask(() => {
@@ -60,7 +65,7 @@
 
 <!-- Floating island group -->
 <T.Group position.y={floatY}>
-	<!-- Hexagonal island base -->
+	<!-- Hexagonal island base — terrain-textured top + rock sides -->
 	<T.Mesh
 		position={[px, 0, pz]}
 		receiveShadow
@@ -70,13 +75,25 @@
 		onpointerleave={() => (hovered = false)}
 	>
 		<T.CylinderGeometry args={[2.5, 2, 1.5, 6]} />
-		<T.MeshStandardMaterial
-			color={hovered ? 0x3a6b1e : 0x2d5016}
-			emissive={hovered ? 0x1a3a0a : 0x000000}
-			emissiveIntensity={hovered ? 0.3 : 0}
-			roughness={0.8}
-			metalness={0.1}
-		/>
+		{#if islandTex}
+			<!-- Terrain map texture on the whole cylinder — top looks like a satellite patch -->
+			<T.MeshStandardMaterial
+				map={islandTex}
+				color={hovered ? 0x88cc44 : 0xffffff}
+				emissive={hovered ? 0x1a3a0a : 0x000000}
+				emissiveIntensity={hovered ? 0.25 : 0}
+				roughness={0.85}
+				metalness={0.05}
+			/>
+		{:else}
+			<T.MeshStandardMaterial
+				color={hovered ? 0x3a6b1e : 0x2d5016}
+				emissive={hovered ? 0x1a3a0a : 0x000000}
+				emissiveIntensity={hovered ? 0.3 : 0}
+				roughness={0.8}
+				metalness={0.1}
+			/>
+		{/if}
 	</T.Mesh>
 
 	<!-- Selection highlight ring + glow aura -->

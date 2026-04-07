@@ -6,6 +6,7 @@
 	import RoomModel from './RoomModel.svelte';
 	import CameraController from './CameraController.svelte';
 	import Avatar from './Avatar.svelte';
+	import FloatingParticles from './FloatingParticles.svelte';
 	import type { IslandModel, SceneControls, ViewMode } from '../types';
 
 	let {
@@ -116,6 +117,9 @@
 <Stars count={1500} radius={80} depth={60} factor={5}
 	saturation={0.3} lightness={0.7} speed={0.3} fade opacity={0.9} />
 
+<!-- Ambient floating particles — firefly/dust-mote layer -->
+<FloatingParticles />
+
 <!-- Lights -->
 <T.HemisphereLight args={[0xc8d0ff, 0x1a0a2e, 0.6]} />
 
@@ -137,10 +141,46 @@
 <!-- Purple rim light — outlines islands against starfield -->
 <T.DirectionalLight position={[-8, 5, -12]} color={0x6b3fa0} intensity={0.4} />
 
+<!-- Warm fill light from below — simulates atmospheric light bounce -->
+<T.PointLight position={[0, -4, 0]} color={0x2a1a4e} intensity={3} distance={40} decay={2} />
+
 <!-- Contact shadows beneath floating islands -->
 <ContactShadows position.y={-2} opacity={0.4} scale={80}
 	blur={2.5} far={6} resolution={256}
 	color={0x0a0a2e} frames={2} />
+
+<!-- Wispy cloud puffs drifting below the islands -->
+{#each [
+	{ x: -12, y: -1.5, z: 8,  sx: 4.5, sz: 2.2, op: 0.07 },
+	{ x:  15, y: -2,   z: -5, sx: 5.5, sz: 2.0, op: 0.06 },
+	{ x:   3, y: -1.8, z: 14, sx: 3.8, sz: 1.8, op: 0.08 },
+	{ x: -18, y: -2.2, z: -10,sx: 6.0, sz: 2.5, op: 0.05 },
+	{ x:  20, y: -1.6, z:  4, sx: 4.2, sz: 1.9, op: 0.07 }
+] as cloud, i (i)}
+	<T.Mesh position={[cloud.x, cloud.y, cloud.z]}>
+		<T.SphereGeometry args={[1, 8, 6]} />
+		<T.MeshStandardMaterial
+			color={0xdce8ff}
+			transparent
+			opacity={cloud.op}
+			roughness={1}
+			metalness={0}
+			depthWrite={false}
+		/>
+	</T.Mesh>
+	<!-- Extra overlapping sphere for a billowy shape -->
+	<T.Mesh position={[cloud.x + cloud.sx * 0.3, cloud.y + 0.3, cloud.z + cloud.sz * 0.2]}>
+		<T.SphereGeometry args={[0.75, 8, 6]} />
+		<T.MeshStandardMaterial
+			color={0xdce8ff}
+			transparent
+			opacity={cloud.op * 0.8}
+			roughness={1}
+			metalness={0}
+			depthWrite={false}
+		/>
+	</T.Mesh>
+{/each}
 
 <!-- Floating island models -->
 {#each models as model, i (model.id)}
