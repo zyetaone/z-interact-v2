@@ -151,3 +151,17 @@ A Svelte MCP server is configured (`.mcp.json`) providing documentation tools:
 2. **get-documentation** — Fetch full doc content for specific sections
 3. **svelte-autofixer** — Analyze Svelte code for issues (use before sending code)
 4. **playground-link** — Generate Svelte Playground links (only if code not written to files)
+
+## Architecture conventions
+
+Describes what the repo does today; apply to new code, don't refactor old code to match. Older generation of the event-app family (ADR-036: a new event is a fork of the template, never a merge).
+
+- **Layout differs from the paths above**: this is a Bun workspace (`apps/quest`, `apps/showcase`, `packages/{shared,editor-engine,world-engine,video-engine}`). The `src/lib/server/...` paths in the sections above now live in `packages/shared/src/db` and `packages/editor-engine/src/server`; the repo layout wins over those paths.
+- **Imports**: `@zyeta/<pkg>` for cross-package code, `$lib/...` within an app, relative `./` / `../` inside a folder (no `#lib`). Add shared code to the owning package, not a copy in an app.
+- **One validator: Valibot** (declared in `apps/quest`). Do not add Zod/TypeBox.
+- **Server boundaries** (SvelteKit 2, `kit.experimental.remoteFunctions` on in both apps): remote `command()`s are route-local in `apps/quest/src/routes/{forge,quest}/ai.remote.ts`; plain HTTP lives in `routes/api/*/+server.ts` and `+page.server.ts` loaders. A new boundary must validate input (Valibot schema) AND authenticate/authorize inside it. Existing remote commands check the `session_id` cookie and space ownership in-body; follow that.
+- **Honest gap**: `api/upload/+server.ts` checks type and size but not the session; `api/seed` uses a key and `api/cleanup` a bearer secret. `hooks.server.ts` adds an origin check and security headers only.
+- **Runes**: computed values use `$derived` / `$derived.by`, not `$effect` writes; `$effect` is for side effects and cleanup. A few existing `$effect`s assign state (e.g. in `routes/quest/+page.svelte`); leave them, don't extend the pattern.
+- **State**: per-page classes (`QuestEngine`, `forge-workspace.svelte.ts`, the editor in `editor-engine`) are instantiated by the page. One module-level `$state` exists: toasts in `packages/shared/src/utils/toast.svelte.ts`. It is UI-only, but module state is shared across requests under SSR, so don't put per-user data in it; use `setContext`/`getContext` (not used in the repo today) for tree-wide state.
+- **Tailwind v4 is present** (`@tailwindcss/vite`, no `tailwind.config`): `apps/*/src/routes/layout.css` imports `tailwindcss` and the forms/typography plugins. Tokens are plain `:root` CSS variables there, with no `@theme` block yet; new design tokens go in an `@theme` block in that file.
+- **Colocate by feature**: apps are route-first (`routes/<area>/` holds its page, `.remote.ts` and `*.svelte.ts`); reusable engines are packages. Put new code beside the route or in the owning package.
